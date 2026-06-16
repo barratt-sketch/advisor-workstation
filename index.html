@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advisor Workstation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f5f4;
+    --bg-tertiary: #f0ede8;
+    --text: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #9a9a9a;
+    --border: rgba(0,0,0,0.12);
+    --border-md: rgba(0,0,0,0.22);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --green: #0F6E56;
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --amber: #854F0B;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --red: #A32D2D;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1b;
+      --bg-secondary: #252524;
+      --bg-tertiary: #2e2e2c;
+      --text: #f0ede8;
+      --text-secondary: #a8a49e;
+      --text-tertiary: #6b6b68;
+      --border: rgba(255,255,255,0.10);
+      --border-md: rgba(255,255,255,0.20);
+      --green: #5DCAA5;
+      --green-bg: #085041;
+      --green-text: #9FE1CB;
+      --amber: #EF9F27;
+      --amber-bg: #633806;
+      --amber-text: #FAC775;
+      --red: #F09595;
+      --red-bg: #791F1F;
+      --red-text: #F7C1C1;
+      --blue: #85B7EB;
+      --blue-bg: #0C447C;
+      --blue-text: #B5D4F4;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-tertiary);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo { font-size: 15px; font-weight: 500; color: var(--text); }
+  .logo span { color: var(--text-secondary); font-weight: 400; }
+
+  .client-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    transition: background 0.15s;
+  }
+  .client-pill:hover { background: var(--bg-secondary); }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--blue-bg);
+    color: var(--blue-text);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; flex-shrink: 0;
+  }
+
+  .client-name { font-size: 13px; font-weight: 500; }
+  .client-sub { font-size: 11px; color: var(--text-secondary); }
+
+  .layout { display: flex; min-height: calc(100vh - 56px); }
+
+  nav {
+    width: 200px;
+    flex-shrink: 0;
+    background: var(--bg);
+    border-right: 0.5px solid var(--border);
+    padding: 1.25rem 0;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-tertiary);
+    padding: 0 1.1rem;
+    margin-bottom: 6px;
+    margin-top: 1rem;
+  }
+  .nav-label:first-child { margin-top: 0; }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 8px 1.1rem;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 0;
+    transition: background 0.12s, color 0.12s;
+  }
+  .nav-btn i { font-size: 16px; flex-shrink: 0; }
+  .nav-btn:hover { background: var(--bg-secondary); color: var(--text); }
+  .nav-btn.active { color: var(--text); font-weight: 500; background: var(--bg-secondary); border-right: 2px solid var(--text); }
+
+  main { flex: 1; padding: 2rem; max-width: 1100px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .mc {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+  .mc .lbl { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+  .mc .val { font-size: 22px; font-weight: 500; color: var(--text); }
+  .mc .sub { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+  .mc.good .val { color: var(--green); }
+  .mc.warn .val { color: var(--amber); }
+  .mc.bad .val { color: var(--red); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 1rem;
+  }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--text-secondary); }
+  .field input, .field select {
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--blue); }
+
+  button {
+    font-size: 13px;
+    padding: 8px 16px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.12s;
+  }
+  button:hover { background: var(--bg-secondary); }
+  button.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  button.primary:hover { opacity: 0.85; }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+    gap: 8px;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { color: var(--text-secondary); flex-shrink: 0; }
+  .result-val { font-weight: 500; color: var(--text); text-align: right; }
+  .result-val.pos { color: var(--green); }
+  .result-val.neg { color: var(--red); }
+  .result-val.warn { color: var(--amber); }
+
+  .bar-row { margin-bottom: 12px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .bar-track { height: 7px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-red { background: var(--red-bg); color: var(--red-text); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+
+  .insight {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+  .insight strong { color: var(--text); font-weight: 500; }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border-md);
+    padding: 1.5rem;
+    width: 480px;
+    max-width: 95vw;
+  }
+  .modal h2 { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+
+  .ss-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+  @media (max-width: 700px) { .ss-grid { grid-template-columns: 1fr 1fr; } }
+
+  .chart-wrap { position: relative; height: 200px; margin-bottom: 1rem; }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding: 2rem;
+    border-top: 0.5px solid var(--border);
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Advisor Workstation <span>· Salt Lake City, UT</span></div>
+  <button class="client-pill" onclick="openModal()" aria-label="Edit client profile">
+    <div class="avatar" id="av">JD</div>
+    <div>
+      <div class="client-name" id="cname">John &amp; Dana Doe</div>
+      <div class="client-sub" id="csub">Ages 48 / 46 · MFJ</div>
+    </div>
+    <i class="ti ti-chevron-down" style="font-size:14px;color:var(--text-secondary)" aria-hidden="true"></i>
+  </button>
+</header>
+
+<div class="layout">
+  <nav aria-label="Planning modules">
+    <div class="nav-label">Planning modules</div>
+    <button class="nav-btn active" onclick="showSection('cashflow',this)">
+      <i class="ti ti-chart-bar" aria-hidden="true"></i> Cash flow
+    </button>
+    <button class="nav-btn" onclick="showSection('tax',this)">
+      <i class="ti ti-receipt" aria-hidden="true"></i> Tax planning
+    </button>
+    <button class="nav-btn" onclick="showSection('insurance',this)">
+      <i class="ti ti-shield" aria-hidden="true"></i> Insurance &amp; risk
+    </button>
+    <button class="nav-btn" onclick="showSection('ss',this)">
+      <i class="ti ti-calendar" aria-hidden="true"></i> Social Security
+    </button>
+    <button class="nav-btn" onclick="showSection('retirement',this)">
+      <i class="ti ti-trending-up" aria-hidden="true"></i> Retirement
+    </button>
+    <button class="nav-btn" onclick="showSection('estate',this)">
+      <i class="ti ti-file" aria-hidden="true"></i> Estate planning
+    </button>
+  </nav>
+
+  <main>
+
+    <!-- CASH FLOW -->
+    <div id="cashflow" class="section active">
+      <h1 class="page-title">Cash flow analysis</h1>
+      <div class="cards" id="cf-summary"></div>
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-title">Income (annual)</div>
+            <div class="field-row">
+              <div class="field"><label>Gross salary (C1)</label><input id="sal1" type="number" value="120000" oninput="calcCF()"></div>
+              <div class="field"><label>Gross salary (C2)</label><input id="sal2" type="number" value="85000" oninput="calcCF()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Other income</label><input id="otherinc" type="number" value="8000" oninput="calcCF()"></div>
+              <div class="field"><label>Rental income</label><input id="rental" type="number" value="0" oninput="calcCF()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Fixed expenses (monthly)</div>
+            <div class="field-row">
+              <div class="field"><label>Mortgage / rent</label><input id="mortgage" type="number" value="2400" oninput="calcCF()"></div>
+              <div class="field"><label>Loan payments</label><input id="loans" type="number" value="600" oninput="calcCF()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Insurance premiums</label><input id="insprem" type="number" value="350" oninput="calcCF()"></div>
+              <div class="field"><label>Utilities</label><input id="utils" type="number" value="280" oninput="calcCF()"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">Variable expenses (monthly)</div>
+            <div class="field-row">
+              <div class="field"><label>Food &amp; dining</label><input id="food" type="number" value="1200" oninput="calcCF()"></div>
+              <div class="field"><label>Transportation</label><input id="trans" type="number" value="700" oninput="calcCF()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Healthcare OOP</label><input id="health" type="number" value="300" oninput="calcCF()"></div>
+              <div class="field"><label>Entertainment</label><input id="entertain" type="number" value="400" oninput="calcCF()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Child / education</label><input id="kids" type="number" value="800" oninput="calcCF()"></div>
+              <div class="field"><label>Other variable</label><input id="othexp" type="number" value="500" oninput="calcCF()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Savings &amp; investments (monthly)</div>
+            <div class="field-row">
+              <div class="field"><label>401(k) / 403(b)</label><input id="k401" type="number" value="1500" oninput="calcCF()"></div>
+              <div class="field"><label>IRA contributions</label><input id="ira" type="number" value="500" oninput="calcCF()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Brokerage / taxable</label><input id="brok" type="number" value="300" oninput="calcCF()"></div>
+              <div class="field"><label>HSA</label><input id="hsa" type="number" value="200" oninput="calcCF()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="cf-bars"></div>
+      <div class="insight" id="cf-insight"></div>
+    </div>
+
+    <!-- TAX -->
+    <div id="tax" class="section">
+      <h1 class="page-title">Tax planning</h1>
+      <div class="cards" id="tax-summary"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Income &amp; deductions</div>
+          <div class="field-row">
+            <div class="field"><label>W-2 income total</label><input id="t-w2" type="number" value="205000" oninput="calcTax()"></div>
+            <div class="field"><label>Capital gains (LTCG)</label><input id="t-cg" type="number" value="12000" oninput="calcTax()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>401(k) pretax contrib.</label><input id="t-401k" type="number" value="23000" oninput="calcTax()"></div>
+            <div class="field"><label>HSA contribution</label><input id="t-hsa" type="number" value="7750" oninput="calcTax()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Itemized deductions</label><input id="t-item" type="number" value="32000" oninput="calcTax()"></div>
+            <div class="field"><label>Other adjustments</label><input id="t-adj" type="number" value="0" oninput="calcTax()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Tax credits</label><input id="t-cred" type="number" value="2000" oninput="calcTax()"></div>
+            <div class="field"><label>Taxes withheld</label><input id="t-with" type="number" value="38000" oninput="calcTax()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Filing status</label>
+              <select id="t-filing" onchange="calcTax()">
+                <option value="mfj">Married filing jointly</option>
+                <option value="single">Single</option>
+                <option value="hoh">Head of household</option>
+              </select>
+            </div>
+            <div class="field"><label>State</label>
+              <select id="t-state" onchange="calcTax()">
+                <option value="UT">Utah (4.85%)</option>
+                <option value="NV">Nevada (0%)</option>
+                <option value="TX">Texas (0%)</option>
+                <option value="CA">California (9.3%)</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" id="tax-results"></div>
+          <div class="card" id="tax-strategies"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSURANCE -->
+    <div id="insurance" class="section">
+      <h1 class="page-title">Insurance &amp; risk analysis</h1>
+      <div class="cards" id="ins-summary"></div>
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-title">Life insurance needs (DIME method)</div>
+            <div class="field-row">
+              <div class="field"><label>Annual income (C1)</label><input id="li-inc1" type="number" value="120000" oninput="calcIns()"></div>
+              <div class="field"><label>Income replace years</label><input id="li-yrs" type="number" value="20" oninput="calcIns()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Outstanding debts</label><input id="li-debt" type="number" value="380000" oninput="calcIns()"></div>
+              <div class="field"><label>Education fund needed</label><input id="li-edu" type="number" value="150000" oninput="calcIns()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Existing coverage (C1)</label><input id="li-exist" type="number" value="200000" oninput="calcIns()"></div>
+              <div class="field"><label>Spouse coverage</label><input id="li-sp" type="number" value="100000" oninput="calcIns()"></div>
+            </div>
+            <div id="li-result" style="margin-top:12px"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Disability insurance</div>
+            <div class="field-row">
+              <div class="field"><label>Monthly gross income</label><input id="di-inc" type="number" value="17000" oninput="calcIns()"></div>
+              <div class="field"><label>Existing DI benefit / mo</label><input id="di-exist" type="number" value="6000" oninput="calcIns()"></div>
+            </div>
+            <div id="di-result" style="margin-top:10px"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">Long-term care planning</div>
+            <div class="field-row">
+              <div class="field"><label>C1 age</label><input id="ltc-age1" type="number" value="48" oninput="calcIns()"></div>
+              <div class="field"><label>C2 age</label><input id="ltc-age2" type="number" value="46" oninput="calcIns()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Daily benefit wanted</label><input id="ltc-daily" type="number" value="300" oninput="calcIns()"></div>
+              <div class="field"><label>Benefit period (years)</label><input id="ltc-period" type="number" value="3" oninput="calcIns()"></div>
+            </div>
+            <div id="ltc-result" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">P&amp;C / umbrella gap check</div>
+            <div class="field-row">
+              <div class="field"><label>Est. net worth</label><input id="pc-nw" type="number" value="900000" oninput="calcIns()"></div>
+              <div class="field"><label>Umbrella coverage</label><input id="pc-umb" type="number" value="1000000" oninput="calcIns()"></div>
+            </div>
+            <div id="pc-result" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL SECURITY -->
+    <div id="ss" class="section">
+      <h1 class="page-title">Social Security optimization</h1>
+      <div class="cards" id="ss-summary"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Social Security inputs</div>
+          <div class="field-row">
+            <div class="field"><label>C1 birth year</label><input id="ss-by1" type="number" value="1976" oninput="calcSS()"></div>
+            <div class="field"><label>C1 PIA (est. at FRA)</label><input id="ss-pia1" type="number" value="2800" oninput="calcSS()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>C2 birth year</label><input id="ss-by2" type="number" value="1978" oninput="calcSS()"></div>
+            <div class="field"><label>C2 PIA (est. at FRA)</label><input id="ss-pia2" type="number" value="1600" oninput="calcSS()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>C1 planned claim age</label><input id="ss-ca1" type="number" min="62" max="70" value="67" oninput="calcSS()"></div>
+            <div class="field"><label>C2 planned claim age</label><input id="ss-ca2" type="number" min="62" max="70" value="65" oninput="calcSS()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Life expectancy (C1)</label><input id="ss-le1" type="number" value="85" oninput="calcSS()"></div>
+            <div class="field"><label>Life expectancy (C2)</label><input id="ss-le2" type="number" value="87" oninput="calcSS()"></div>
+          </div>
+        </div>
+        <div class="card" id="ss-results"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Claiming age scenarios (C1)</div>
+        <div class="ss-grid" id="ss-scenarios"></div>
+      </div>
+    </div>
+
+    <!-- RETIREMENT -->
+    <div id="retirement" class="section">
+      <h1 class="page-title">Retirement projection</h1>
+      <div class="cards" id="ret-summary"></div>
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-title">Current assets</div>
+            <div class="field-row">
+              <div class="field"><label>401(k) / 403(b)</label><input id="r-401" type="number" value="480000" oninput="calcRet()"></div>
+              <div class="field"><label>IRA / Roth IRA</label><input id="r-ira" type="number" value="120000" oninput="calcRet()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Taxable brokerage</label><input id="r-brok" type="number" value="85000" oninput="calcRet()"></div>
+              <div class="field"><label>Real estate equity</label><input id="r-re" type="number" value="280000" oninput="calcRet()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Monthly 401(k) contrib.</label><input id="r-c401" type="number" value="1920" oninput="calcRet()"></div>
+              <div class="field"><label>Monthly other contrib.</label><input id="r-coth" type="number" value="800" oninput="calcRet()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Retirement parameters</div>
+            <div class="field-row">
+              <div class="field"><label>Current age (C1)</label><input id="r-cur" type="number" value="48" oninput="calcRet()"></div>
+              <div class="field"><label>Target retirement age</label><input id="r-age" type="number" value="65" oninput="calcRet()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Expected return (%)</label><input id="r-ret" type="number" step="0.1" value="6.5" oninput="calcRet()"></div>
+              <div class="field"><label>Inflation rate (%)</label><input id="r-inf" type="number" step="0.1" value="3.0" oninput="calcRet()"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Desired annual income</label><input id="r-need" type="number" value="120000" oninput="calcRet()"></div>
+              <div class="field"><label>SS + pension income</label><input id="r-ss" type="number" value="52000" oninput="calcRet()"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" id="ret-results"></div>
+          <div class="chart-wrap">
+            <canvas id="retChart" role="img" aria-label="Retirement portfolio growth projection"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTATE -->
+    <div id="estate" class="section">
+      <h1 class="page-title">Estate planning</h1>
+      <div class="cards" id="est-summary"></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Estate inventory</div>
+          <div class="field-row">
+            <div class="field"><label>Primary residence</label><input id="e-home" type="number" value="650000" oninput="calcEstate()"></div>
+            <div class="field"><label>Investment accounts</label><input id="e-inv" type="number" value="685000" oninput="calcEstate()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Retirement accounts</label><input id="e-ret" type="number" value="600000" oninput="calcEstate()"></div>
+            <div class="field"><label>Life insurance (death benefit)</label><input id="e-li" type="number" value="500000" oninput="calcEstate()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Other assets</label><input id="e-oth" type="number" value="80000" oninput="calcEstate()"></div>
+            <div class="field"><label>Total liabilities</label><input id="e-liab" type="number" value="380000" oninput="calcEstate()"></div>
+          </div>
+        </div>
+        <div class="card" id="est-results"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Document &amp; planning checklist</div>
+        <div id="est-checklist"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>Advisor Workstation &mdash; for internal planning use only. Not a substitute for professional legal or tax advice.</footer>
+
+<!-- CLIENT MODAL -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-label="Edit client profile">
+  <div class="modal">
+    <h2>Client profile</h2>
+    <div class="field-row">
+      <div class="field"><label>Client 1 name</label><input id="c1name" value="John Doe" oninput="updateClient()"></div>
+      <div class="field"><label>Client 1 age</label><input id="c1age" type="number" value="48" oninput="updateClient()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Client 2 name (optional)</label><input id="c2name" value="Dana Doe" oninput="updateClient()"></div>
+      <div class="field"><label>Client 2 age</label><input id="c2age" type="number" value="46" oninput="updateClient()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Filing status</label>
+        <select id="filing" onchange="updateClient()">
+          <option value="MFJ">Married filing jointly</option>
+          <option value="Single">Single</option>
+          <option value="HoH">Head of household</option>
+        </select>
+      </div>
+      <div class="field"><label>State</label>
+        <select id="state" onchange="updateClient()">
+          <option value="UT">Utah</option>
+          <option value="NV">Nevada</option>
+          <option value="TX">Texas</option>
+          <option value="CA">California</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal()" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Math.round(n).toLocaleString();
+const fmtK = n => n >= 1e6 ? '$' + (n/1e6).toFixed(2) + 'M' : n >= 1e3 ? '$' + Math.round(n/1e3) + 'K' : fmt(n);
+const pct = n => Math.round(n * 10) / 10 + '%';
+
+function openModal() { $('modal').classList.add('open'); }
+function closeModal() { $('modal').classList.remove('open'); }
+$('modal').addEventListener('click', e => { if(e.target === $('modal')) closeModal(); });
+
+function updateClient() {
+  const c1 = $('c1name').value || 'Client 1';
+  const c2 = $('c2name').value;
+  const age1 = $('c1age').value;
+  const age2 = $('c2age').value;
+  const filing = $('filing').value;
+  const initials = (c1[0] || '?') + (c2 ? (c2[0] || '') : '');
+  $('av').textContent = initials.toUpperCase();
+  $('cname').textContent = c2 ? c1 + ' & ' + c2 : c1;
+  $('csub').textContent = 'Ages ' + age1 + (c2 ? ' / ' + age2 : '') + ' · ' + filing;
+}
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  $(id).classList.add('active');
+  btn.classList.add('active');
+  const calc = {cashflow:calcCF, tax:calcTax, insurance:calcIns, ss:calcSS, retirement:calcRet, estate:calcEstate};
+  if(calc[id]) calc[id]();
+}
+
+function metricCards(containerId, items) {
+  $(containerId).innerHTML = items.map(i =>
+    `<div class="mc${i.cls ? ' ' + i.cls : ''}">
+      <div class="lbl">${i.lbl}</div>
+      <div class="val">${i.val}</div>
+      <div class="sub">${i.sub || ''}</div>
+    </div>`
+  ).join('');
+}
+
+function calcCF() {
+  const grossInc = [+$('sal1').value, +$('sal2').value, +$('otherinc').value, +$('rental').value].reduce((a,b)=>a+b,0);
+  const monthly = grossInc / 12;
+  const totalFixed = [+$('mortgage').value, +$('loans').value, +$('insprem').value, +$('utils').value].reduce((a,b)=>a+b,0);
+  const totalVar = [+$('food').value, +$('trans').value, +$('health').value, +$('entertain').value, +$('kids').value, +$('othexp').value].reduce((a,b)=>a+b,0);
+  const totalSav = [+$('k401').value, +$('ira').value, +$('brok').value, +$('hsa').value].reduce((a,b)=>a+b,0);
+  const totalExp = totalFixed + totalVar + totalSav;
+  const netMonthly = monthly - totalExp;
+  const savRate = totalSav / monthly * 100;
+  const fedEst = grossInc * 0.22;
+  const afterTax = (grossInc - fedEst) / 12;
+
+  metricCards('cf-summary', [
+    {lbl:'Gross annual income', val:fmtK(grossInc), sub:'all sources'},
+    {lbl:'Est. monthly take-home', val:fmt(afterTax * 0.93), sub:'after fed + FICA est.'},
+    {lbl:'Monthly savings rate', val:pct(savRate), sub:fmt(totalSav)+'/mo', cls:savRate>=15?'good':savRate>=10?'warn':'bad'},
+    {lbl:'Monthly surplus', val:(netMonthly>=0?'+':'')+fmt(netMonthly), sub:'before tax', cls:netMonthly>=0?'good':'bad'}
+  ]);
+
+  const cats = [
+    {name:'Fixed expenses', val:totalFixed, color:'#378ADD'},
+    {name:'Variable expenses', val:totalVar, color:'#1D9E75'},
+    {name:'Savings & investing', val:totalSav, color:'#534AB7'},
+  ];
+  $('cf-bars').innerHTML = '<div class="card-title">Monthly budget allocation</div>' +
+    cats.map(c => `<div class="bar-row">
+      <div class="bar-label"><span>${c.name}</span><span>${fmt(c.val)}/mo (${Math.round(c.val/monthly*100)}%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.round(c.val/monthly*100))}%;background:${c.color}"></div></div>
+    </div>`).join('');
+
+  const tips = [];
+  if(savRate < 15) tips.push(`<strong>Savings rate of ${pct(savRate)} is below the recommended 15–20%.</strong> Consider increasing 401(k) deferral or automating additional transfers.`);
+  if(totalFixed/monthly > 0.5) tips.push(`<strong>Fixed costs are ${pct(totalFixed/monthly*100)} of income</strong> — above the 50% guideline. Review mortgage and loan obligations.`);
+  if(savRate >= 20) tips.push(`<strong>Strong savings rate of ${pct(savRate)}.</strong> Consider maxing HSA and backdoor Roth if income limits permit.`);
+  if(netMonthly < 0) tips.push(`<strong>Monthly cash flow is negative by ${fmt(Math.abs(netMonthly))}.</strong> Review discretionary spending or adjust savings targets.`);
+  $('cf-insight').innerHTML = tips.length ? tips.join('<br><br>') : 'Cash flow looks balanced. Review annually and after major life events.';
+}
+
+function calcTax() {
+  const w2 = +$('t-w2').value;
+  const cg = +$('t-cg').value;
+  const k401 = +$('t-401k').value;
+  const hsa = +$('t-hsa').value;
+  const item = +$('t-item').value;
+  const adj = +$('t-adj').value;
+  const cred = +$('t-cred').value;
+  const withheld = +$('t-with').value;
+  const stdDed = 29200;
+  const deduction = Math.max(item, stdDed);
+  const usingItemized = item > stdDed;
+  const agi = w2 - k401 - hsa - adj;
+  const taxableOrd = Math.max(0, agi - deduction);
+  const brackets = [[23200,0.10],[94300,0.12],[201050,0.22],[383900,0.24],[487450,0.32],[731200,0.35],[Infinity,0.37]];
+  let fedTax = 0, prev = 0;
+  for(const [top, rate] of brackets) {
+    if(taxableOrd <= prev) break;
+    fedTax += (Math.min(taxableOrd, top) - prev) * rate;
+    prev = top;
+  }
+  const cgTax = cg > 0 ? (agi > 94050 ? cg * 0.15 : 0) : 0;
+  const ficaTax = Math.min(w2, 168600) * 0.062 + w2 * 0.0145;
+  const stateRates = {UT:0.0485, NV:0, TX:0, CA:0.093, other:0};
+  const stateTax = taxableOrd * (stateRates[$('t-state').value] || 0);
+  const totalTax = fedTax + cgTax + ficaTax + stateTax - cred;
+  const effectiveRate = totalTax / w2 * 100;
+  const marginal = taxableOrd > 383900 ? '32%' : taxableOrd > 201050 ? '24%' : taxableOrd > 94300 ? '22%' : '12%';
+  const refundDue = withheld - (fedTax - cred);
+
+  metricCards('tax-summary', [
+    {lbl:'Adjusted gross income', val:fmtK(agi), sub:'before deductions'},
+    {lbl:'Est. federal tax', val:fmtK(fedTax - cred), sub:'after credits'},
+    {lbl:'Effective rate (all taxes)', val:pct(effectiveRate), cls:effectiveRate>30?'bad':effectiveRate>22?'warn':'good'},
+    {lbl:'Refund / balance due', val:(refundDue>=0?'+':'')+fmt(refundDue), sub:'estimated', cls:refundDue>=0?'good':'bad'}
+  ]);
+
+  $('tax-results').innerHTML = `<div class="card-title">Tax breakdown</div>` +
+    [['AGI', fmt(agi)], ['Deduction ('+(usingItemized?'itemized':'standard')+')', '-'+fmt(deduction)], ['Taxable income', fmt(taxableOrd)], ['Federal income tax', fmt(fedTax)], ['FICA / SE tax', fmt(ficaTax)], ['State income tax', fmt(stateTax)], ['Tax credits', '-'+fmt(cred)], ['LTCG tax', fmt(cgTax)], ['Total tax burden', fmt(totalTax)], ['Marginal bracket', marginal]]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span><span class="result-val">${v}</span></div>`).join('');
+
+  const strats = [];
+  if(w2 > 150000) strats.push('Backdoor Roth IRA — income above direct contribution limits');
+  if(!usingItemized) strats.push('Consider bunching charitable gifts to itemize every other year');
+  if(cg > 0) strats.push('Tax-loss harvesting in brokerage to offset capital gains');
+  strats.push('Max HSA — triple tax advantage (deductible, grows tax-free, tax-free withdrawal for medical)');
+  if(taxableOrd > 201050) strats.push('Deferred comp or 457(b) if available through employer');
+  if(w2 > 200000) strats.push('Review NIIT exposure (3.8%) on net investment income above threshold');
+
+  $('tax-strategies').innerHTML = `<div class="card-title">Planning opportunities</div>` +
+    strats.map(s => `<div class="result-row"><i class="ti ti-circle-check" style="color:var(--green);font-size:14px;margin-right:8px;flex-shrink:0" aria-hidden="true"></i><span style="font-size:13px">${s}</span></div>`).join('');
+}
+
+function calcIns() {
+  const inc1 = +$('li-inc1').value;
+  const yrs = +$('li-yrs').value;
+  const debt = +$('li-debt').value;
+  const edu = +$('li-edu').value;
+  const exist = +$('li-exist').value;
+  const liNeed = (inc1 * yrs * 0.7) + debt + edu;
+  const liGap = liNeed - exist;
+
+  $('li-result').innerHTML = [['Estimated need (DIME)', fmtK(liNeed)], ['Existing coverage', fmtK(exist)], ['Coverage gap', `<span class="result-val ${liGap>0?'neg':'pos'}">${liGap>0?fmtK(liGap)+' underinsured':fmtK(Math.abs(liGap))+' surplus'}</span>`]]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span>${typeof v==='string'&&v.includes('span')?v:`<span class="result-val">${v}</span>`}</div>`).join('');
+
+  const diNeed = +$('di-inc').value * 0.60;
+  const diExist = +$('di-exist').value;
+  const diGap = diNeed - diExist;
+  $('di-result').innerHTML = [['Recommended benefit (60%)', fmt(diNeed)+'/mo'], ['Existing benefit', fmt(diExist)+'/mo'], ['Gap', `<span class="result-val ${diGap>0?'neg':'pos'}">${diGap>0?fmt(diGap)+'/mo underinsured':fmt(Math.abs(diGap))+'/mo surplus'}</span>`]]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span>${v.includes('span')?v:`<span class="result-val">${v}</span>`}</div>`).join('');
+
+  const ltcTotal = +$('ltc-daily').value * 365 * +$('ltc-period').value;
+  const ltcPrem = +$('ltc-age1').value < 55 ? 2200 : 3800;
+  $('ltc-result').innerHTML = [['Total benefit pool', fmtK(ltcTotal)], ['Est. annual premium (C1)', fmt(ltcPrem)+'/yr'], ['Recommendation', '<span class="badge badge-blue">Review hybrid policy</span>']]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span><span class="result-val">${v}</span></div>`).join('');
+
+  const nw = +$('pc-nw').value;
+  const umb = +$('pc-umb').value;
+  const pcGap = nw - umb;
+  $('pc-result').innerHTML = [['Net worth', fmtK(nw)], ['Umbrella coverage', fmtK(umb)], ['Status', `<span class="badge ${pcGap>0?'badge-red':'badge-green'}">${pcGap>0?'Increase to '+fmtK(nw):'Adequately covered'}</span>`]]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span><span class="result-val">${v}</span></div>`).join('');
+
+  metricCards('ins-summary', [
+    {lbl:'Life ins. gap (C1)', val:fmtK(Math.max(0,liGap)), sub:liGap>0?'underinsured':'covered', cls:liGap>0?'bad':'good'},
+    {lbl:'DI gap', val:fmt(Math.max(0,diGap))+'/mo', sub:diGap>0?'underinsured':'covered', cls:diGap>0?'bad':'good'},
+    {lbl:'LTC pool needed', val:fmtK(ltcTotal), sub:$('ltc-period').value+' yr benefit period'},
+    {lbl:'Umbrella vs net worth', val:fmtK(umb), sub:pcGap>0?'increase needed':'adequate', cls:pcGap>0?'warn':'good'}
+  ]);
+}
+
+function calcSS() {
+  const pia1 = +$('ss-pia1').value;
+  const ca1 = Math.min(70, Math.max(62, +$('ss-ca1').value));
+  const pia2 = +$('ss-pia2').value;
+  const ca2 = Math.min(70, Math.max(62, +$('ss-ca2').value));
+  const le1 = +$('ss-le1').value;
+  const le2 = +$('ss-le2').value;
+  const fra = 67;
+
+  function benefit(pia, age) {
+    if(age < fra) { const early = fra - age; return pia * (1 - early * 0.05); }
+    return pia * (1 + (age - fra) * 0.08);
+  }
+
+  const b1 = benefit(pia1, ca1);
+  const b2 = Math.max(benefit(pia2, ca2), b1 * 0.5);
+  const totalMo = b1 + b2;
+  const lifetime1 = b1 * 12 * Math.max(0, le1 - ca1);
+  const lifetime2 = b2 * 12 * Math.max(0, le2 - ca2);
+
+  metricCards('ss-summary', [
+    {lbl:'C1 monthly benefit', val:fmt(b1), sub:'at age '+ca1},
+    {lbl:'C2 / spousal benefit', val:fmt(b2), sub:'at age '+ca2},
+    {lbl:'Combined monthly', val:fmt(totalMo), sub:'both claiming'},
+    {lbl:'Est. combined lifetime', val:fmtK(lifetime1+lifetime2), sub:'to life expectancy'}
+  ]);
+
+  $('ss-results').innerHTML = `<div class="card-title">Benefit analysis</div>` +
+    [['C1 PIA at FRA', fmt(pia1)+'/mo'], ['C1 at claim age '+ca1, fmt(b1)+'/mo'], ['C2 / spousal benefit', fmt(b2)+'/mo'], ['Combined monthly', fmt(totalMo)+'/mo'], ['C1 lifetime to LE', fmtK(lifetime1)], ['C2 lifetime to LE', fmtK(lifetime2)], ['Combined lifetime', fmtK(lifetime1+lifetime2)]]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span><span class="result-val">${v}</span></div>`).join('');
+
+  $('ss-scenarios').innerHTML = [62,65,67,70].map(age => {
+    const b = benefit(pia1, age);
+    const life = Math.round(b * 12 * Math.max(0, le1 - age));
+    return `<div class="mc${age===ca1?' good':''}">
+      <div class="lbl">Age ${age}</div>
+      <div class="val" style="font-size:17px">${fmt(b)}/mo</div>
+      <div class="sub">${fmtK(life)} lifetime</div>
+    </div>`;
+  }).join('');
+}
+
+let retChartInst = null;
+function calcRet() {
+  const cur = +$('r-cur').value;
+  const retAge = +$('r-age').value;
+  const total = +$('r-401').value + +$('r-ira').value + +$('r-brok').value;
+  const contrib = +$('r-c401').value + +$('r-coth').value;
+  const rate = +$('r-ret').value / 100;
+  const inf = +$('r-inf').value / 100;
+  const need = +$('r-need').value;
+  const ssInc = +$('r-ss').value;
+  const yrs = Math.max(0, retAge - cur);
+  const mr = rate / 12;
+  const months = yrs * 12;
+  const futurePortfolio = total * Math.pow(1+rate, yrs) + (months > 0 ? contrib * ((Math.pow(1+mr, months)-1)/mr) : 0);
+  const realNeed = need * Math.pow(1+inf, yrs);
+  const portfolioNeed = (realNeed - ssInc) / 0.04;
+  const gap = portfolioNeed - futurePortfolio;
+
+  metricCards('ret-summary', [
+    {lbl:'Current portfolio', val:fmtK(total), sub:'investable assets'},
+    {lbl:'Projected at '+retAge, val:fmtK(futurePortfolio), sub:yrs+' yrs at '+pct(rate*100)},
+    {lbl:'Portfolio needed', val:fmtK(portfolioNeed), sub:'4% rule + SS offset'},
+    {lbl:'Surplus / shortfall', val:(gap<=0?'+':'-')+fmtK(Math.abs(gap)), sub:gap<=0?'on track':'additional needed', cls:gap<=0?'good':'bad'}
+  ]);
+
+  $('ret-results').innerHTML = `<div class="card-title">Retirement readiness</div>` +
+    [['Years to retirement', ''+yrs], ["Today's nest egg", fmtK(total)], ['Projected portfolio', fmtK(futurePortfolio)], ['Real income need', fmt(realNeed)+'/yr'], ['SS + pension offset', fmt(ssInc)+'/yr'], ['Portfolio required', fmtK(portfolioNeed)], ['Status', gap<=0?'<span class="badge badge-green">On track</span>':'<span class="badge badge-red">Shortfall: '+fmtK(gap)+'</span>']]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span><span class="result-val">${v}</span></div>`).join('');
+
+  const labels = [], vals = [];
+  for(let y = 0; y <= yrs; y++) {
+    labels.push(cur + y);
+    const m = y * 12;
+    vals.push(Math.round(total * Math.pow(1+rate, y) + (m > 0 ? contrib * ((Math.pow(1+mr, m)-1)/mr) : 0)));
+  }
+  if(retChartInst) retChartInst.destroy();
+  retChartInst = new Chart($('retChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Portfolio value', data: vals, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.07)', tension: 0.3, pointRadius: 0, fill: true }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => fmtK(ctx.raw) } } }, scales: { x: { ticks: { maxTicksLimit: 7, color: '#888' }, grid: { color: 'rgba(128,128,128,0.08)' } }, y: { ticks: { callback: v => fmtK(v), color: '#888' }, grid: { color: 'rgba(128,128,128,0.08)' } } } }
+  });
+}
+
+function calcEstate() {
+  const home = +$('e-home').value;
+  const inv = +$('e-inv').value;
+  const ret = +$('e-ret').value;
+  const li = +$('e-li').value;
+  const oth = +$('e-oth').value;
+  const liab = +$('e-liab').value;
+  const gross = home + inv + ret + li + oth;
+  const net = gross - liab;
+  const probate = (home + inv + oth) * 0.03;
+  const exemption = 13610000;
+  const taxable = Math.max(0, net - exemption);
+  const estTax = taxable * 0.40;
+
+  metricCards('est-summary', [
+    {lbl:'Gross estate', val:fmtK(gross), sub:'all assets'},
+    {lbl:'Net estate', val:fmtK(net), sub:'after liabilities'},
+    {lbl:'Federal estate tax', val:estTax>0?fmtK(estTax):'$0', sub:estTax>0?'above exemption':'below $13.61M exemption', cls:estTax>0?'bad':'good'},
+    {lbl:'Est. probate costs', val:fmtK(probate), sub:'~3% of probate assets', cls:'warn'}
+  ]);
+
+  $('est-results').innerHTML = `<div class="card-title">Estate analysis</div>` +
+    [['Gross estate', fmtK(gross)], ['Liabilities', '-'+fmtK(liab)], ['Net estate', fmtK(net)], ['Federal exemption (2024)', '$13.61M'], ['Taxable above exemption', fmtK(taxable)], ['Estimated estate tax', fmtK(estTax)], ['Probate exposure', fmtK(home+inv+oth)], ['Est. probate fees', fmtK(probate)]]
+    .map(([l,v]) => `<div class="result-row"><span class="result-label">${l}</span><span class="result-val">${v}</span></div>`).join('');
+
+  const checks = [
+    [true, 'Revocable living trust — avoids probate on ' + fmtK(home+inv+oth) + ' of assets'],
+    [true, 'Update beneficiary designations on all retirement accounts and life insurance'],
+    [net > 1e6, 'Pour-over will to capture any assets outside the trust'],
+    [true, 'Durable power of attorney (financial) for both spouses'],
+    [true, 'Healthcare power of attorney + advance directive for both spouses'],
+    [true, 'HIPAA authorization forms on file'],
+    [li > 0, 'Review life insurance ownership — consider ILIT if estate tax exposure grows'],
+    [net > 5e6, 'Annual gifting strategy — $18,000 per recipient per year exclusion'],
+    [ret > 500000, 'Inherited IRA planning — designate beneficiaries carefully for stretch strategy'],
+    [true, 'Review titling of all accounts and real property'],
+  ].filter(([cond]) => cond);
+
+  $('est-checklist').innerHTML = checks.map(([, txt]) =>
+    `<div class="result-row">
+      <i class="ti ti-square" style="color:var(--text-tertiary);font-size:14px;margin-right:10px;flex-shrink:0" aria-hidden="true"></i>
+      <span style="font-size:13px">${txt}</span>
+    </div>`
+  ).join('');
+}
+
+calcCF();
+</script>
+</body>
+</html>
