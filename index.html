@@ -931,6 +931,118 @@ input[readonly]:focus{outline:none;box-shadow:none}
   .profile-hero-watermark{width:80px}
 }
 
+
+/* ── Rec Center — rec2 cards ────────────────────────────────────────────── */
+.rec2{
+  background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:12px 14px;margin-bottom:6px;cursor:pointer;
+  transition:border-color .15s,box-shadow .15s,transform .15s;
+}
+.rec2:hover{border-color:var(--bd2);box-shadow:var(--sh1);transform:translateY(-1px)}
+.rec2.status-inplan{border-left:3px solid var(--blue)}
+.rec2.status-inprogress{border-left:3px solid var(--amber)}
+.rec2.status-implemented{border-left:3px solid var(--green);opacity:.7}
+.rec2.status-dismissed{border-left:3px solid var(--bd2);opacity:.5}
+.rec2-top{display:flex;align-items:flex-start;gap:10px}
+.rec2-icon{
+  width:32px;height:32px;border-radius:var(--rm);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:1px;
+}
+.rec2-body{flex:1;min-width:0}
+.rec2-title{
+  font-size:13.5px;font-weight:500;color:var(--tx);line-height:1.4;
+  margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:5px;
+}
+.rec2-why{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:3px}
+.rec2-desc{font-size:12px;color:var(--tx3);line-height:1.5;margin-bottom:6px}
+.rec2-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rec2-actions{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.rec2-act-btn{
+  padding:3px 9px;border-radius:10px;font-size:11px;font-weight:500;
+  border:1px solid var(--bd2);background:var(--bg2);color:var(--tx2);cursor:pointer;
+  transition:all .12s;
+}
+.rec2-act-btn:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.rec2-act-btn.active-status{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* Priority badges */
+.p-critical{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--rbg);color:var(--red);border:1px solid var(--rborder)}
+.p-high{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--abg);color:var(--amber);border:1px solid var(--aborder)}
+.p-medium{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--bbg);color:var(--blue);border:1px solid var(--bborder)}
+.p-low{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:var(--bg2);color:var(--tx2);border:1px solid var(--bd2)}
+
+/* Complexity badges */
+.c-easy{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--gbg);color:var(--green);border:1px solid var(--gborder)}
+.c-moderate{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--abg);color:var(--amber);border:1px solid var(--aborder)}
+.c-advanced{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--rbg);color:var(--red);border:1px solid var(--rborder)}
+
+/* Category tag & impact */
+.cat-tag{font-size:10px;padding:2px 7px;border-radius:999px;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd)}
+.impact-val{font-size:10.5px;color:var(--green);font-weight:500;display:flex;align-items:center;gap:3px}
+
+/* Rec drawer */
+.rec-drawer{
+  position:fixed;right:0;top:52px;bottom:0;width:440px;max-width:95vw;
+  background:var(--bg);border-left:1px solid var(--bd);
+  z-index:300;display:flex;flex-direction:column;overflow:hidden;
+  transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--sh3);
+}
+.rec-drawer.open{transform:translateX(0)}
+.rec-drawer-close{
+  position:absolute;top:12px;right:12px;
+  width:28px;height:28px;border-radius:var(--rm);
+  border:1px solid var(--bd2);background:var(--bg2);color:var(--tx2);
+  cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
+  z-index:1;transition:all .15s;
+}
+.rec-drawer-close:hover{background:var(--rbg);color:var(--red);border-color:var(--rborder)}
+.rec-drawer-inner{flex:1;overflow-y:auto;padding:1rem 1.1rem 1.5rem}
+.rec-drawer-cat{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--tx3);margin-bottom:4px}
+.rec-drawer-title{font-size:15px;font-weight:600;letter-spacing:-.02em;color:var(--tx);line-height:1.35;margin-bottom:8px}
+.rec-drawer-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.rec-drawer-section{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--bd)}
+.rec-drawer-section:last-child{border-bottom:none}
+.rec-drawer-section-title{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.rec-drawer-text{font-size:12.5px;color:var(--tx);line-height:1.6}
+.rec-drawer-status-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rdsb{
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
+  border-radius:var(--rm);border:1px solid var(--bd2);
+  background:var(--bg2);color:var(--tx2);font-size:12px;font-weight:500;cursor:pointer;
+  transition:all .15s;
+}
+.rdsb:hover{border-color:var(--brand);color:var(--brand);background:var(--bbg)}
+.rdsb.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* Drawer backdrop */
+#drawer-backdrop{
+  display:none;position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.25);
+}
+#drawer-backdrop.open{display:block}
+
+/* RC empty state */
+.rc-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:3rem;color:var(--tx3);font-size:13px;text-align:center;gap:.5rem;
+}
+.rc-empty i{font-size:32px;margin-bottom:.25rem}
+
+/* RC filter chips */
+.rc-chip{
+  display:inline-flex;align-items:center;padding:4px 11px;border-radius:999px;
+  font-size:11.5px;font-weight:500;cursor:pointer;border:1px solid var(--bd2);
+  background:var(--bg);color:var(--tx2);transition:all .12s;
+}
+.rc-chip:hover,.rc-chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* Group headers */
+.group-hdr{
+  display:flex;align-items:center;gap:6px;
+  margin:1rem 0 .4rem;font-size:11px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--tx3);
+}
+
 </style>
 </head>
 <body>
