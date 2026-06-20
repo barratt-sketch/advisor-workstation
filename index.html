@@ -166,20 +166,42 @@ input:focus,select:focus,textarea:focus{outline:none}
   font-size:13px;font-weight:700;color:#fff;letter-spacing:-.02em;
 }
 /* topbar logo now uses .topbar-logo-img class */
-.topbar-center{display:flex;align-items:center;gap:6px}
+.topbar-center{display:flex;align-items:center;gap:6px;position:relative}
 .topbar-client-chip{
   display:flex;align-items:center;gap:8px;padding:5px 12px 5px 6px;
   background:var(--sidebar3);border-radius:var(--rxl);cursor:pointer;
   border:1px solid rgba(255,255,255,.08);transition:background .15s;
 }
-.topbar-client-chip:hover{background:rgba(255,255,255,.1)}
+.topbar-client-chip:hover,.topbar-client-chip.open{background:rgba(255,255,255,.1)}
 .topbar-chip-av{
   width:24px;height:24px;border-radius:50%;background:var(--brand);
   display:flex;align-items:center;justify-content:center;
   font-size:10px;font-weight:600;color:#fff;
 }
 .topbar-chip-name{font-size:13px;font-weight:500;color:var(--tx-inv);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.topbar-chip-arrow{color:var(--tx-inv3);font-size:11px}
+.topbar-chip-arrow{color:var(--tx-inv3);font-size:11px;transition:transform .15s}
+.topbar-client-chip.open .topbar-chip-arrow{transform:rotate(180deg)}
+#client-switcher{
+  display:none;position:absolute;top:calc(100% + 8px);left:0;
+  background:var(--sidebar2);border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--rm);box-shadow:0 8px 24px rgba(0,0,0,.4);
+  min-width:200px;z-index:300;padding:6px;
+}
+#client-switcher.open{display:flex;flex-direction:column;gap:3px}
+.client-tab{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:6px;border:none;cursor:pointer;
+  background:transparent;color:var(--tx-inv2);font-size:13px;
+  text-align:left;transition:background .12s;width:100%;
+}
+.client-tab:hover{background:rgba(255,255,255,.07)}
+.client-tab.active{background:var(--brand);color:#fff}
+.ct-remove{
+  opacity:0;font-size:14px;line-height:1;padding:1px 3px;border-radius:3px;
+  color:var(--tx-inv3);transition:opacity .12s;
+}
+.client-tab:hover .ct-remove{opacity:1}
+.client-tab.active .ct-remove{opacity:.6;color:#fff}
 .topbar-right{display:flex;align-items:center;gap:8px}
 .topbar-btn{
   display:flex;align-items:center;gap:6px;padding:5px 12px;
@@ -1140,7 +1162,7 @@ input[readonly]:focus{outline:none;box-shadow:none}
 
 <div class="topbar">
   <div class="topbar-center">
-    <div class="topbar-client-chip" onclick="showSection('client',document.querySelector('.nav-btn'))">
+    <div class="topbar-client-chip" id="client-chip" onclick="toggleClientDropdown(event)">
       <div class="topbar-chip-av" id="av">?</div>
       <span class="topbar-chip-name" id="hdr-name">New Client</span>
       <span class="topbar-chip-arrow"><i class="ti ti-chevron-down"></i></span>
@@ -1975,7 +1997,7 @@ const PDC_DEFAULTS = {
     min_claim_age:        62,
     cola_2026:            0.028, // 2.8% confirmed COLA for 2026
     cola_assumption:      0.025, // long-run assumption for projections
-    // SS taxation thresholds (combined income = AGI + 0.5Ã—SS benefit)
+    // SS taxation thresholds (combined income = AGI + 0.5×SS benefit)
     ss_tax_low_single:   25000,
     ss_tax_high_single:  34000,
     ss_tax_low_mfj:      32000,
@@ -2855,6 +2877,19 @@ function restoreScalars(c){
 }
 
 // â•â• CLIENT SWITCHER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function toggleClientDropdown(e){
+  e.stopPropagation();
+  const chip=$('client-chip'),sw=$('client-switcher');
+  if(!chip||!sw)return;
+  const isOpen=sw.classList.contains('open');
+  sw.classList.toggle('open',!isOpen);
+  chip.classList.toggle('open',!isOpen);
+}
+document.addEventListener('click',function(){
+  const sw=$('client-switcher'),chip=$('client-chip');
+  if(sw)sw.classList.remove('open');
+  if(chip)chip.classList.remove('open');
+});
 function renderClientSwitcher(){
   const wrap=$('client-switcher');if(!wrap)return;
   wrap.innerHTML='';
@@ -2867,7 +2902,7 @@ function renderClientSwitcher(){
     // Use createElement for the remove span to avoid any ID quoting issues
     const nameSpan=document.createElement('span');nameSpan.textContent=name;
     const removeSpan=document.createElement('span');
-    removeSpan.className='ct-remove';removeSpan.title='Remove client';removeSpan.textContent='Ã—';
+    removeSpan.className='ct-remove';removeSpan.title='Remove client';removeSpan.textContent='×';
     removeSpan.addEventListener('click',e=>{e.stopPropagation();removeClient(c.id);});
     btn.appendChild(nameSpan);btn.appendChild(removeSpan);
     btn.addEventListener('click',()=>switchClient(c.id));
@@ -3437,14 +3472,14 @@ function recalc(){
   // Insurance
   const liNeed=(+(($('li-inc1')?.value)||0)*+(($('li-yrs')?.value)||20)*.7)+(+(($('li-debt')?.value)||0))+(+(($('li-edu')?.value)||0));
   const liGap=liNeed-(+(($('li-exist')?.value)||0));
-  const lir=$('li-result');if(lir)lir.innerHTML=[['DIME need',fmtK(liNeed),"<strong>DIME method</strong>Debt + Income Ã— years + Mortgage + Education - existing coverage."],['Existing coverage',fmtK(+(($('li-exist')?.value)||0))],['Gap',liGap>0?fmtK(liGap)+' gap':fmtK(Math.abs(liGap))+' surplus',null,liGap>0?'neg':'pos']].map(([l,v,t,cls])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv${cls?' '+cls:''}">${v}</span></div>`).join('');
+  const lir=$('li-result');if(lir)lir.innerHTML=[['DIME need',fmtK(liNeed),"<strong>DIME method</strong>Debt + Income × years + Mortgage + Education - existing coverage."],['Existing coverage',fmtK(+(($('li-exist')?.value)||0))],['Gap',liGap>0?fmtK(liGap)+' gap':fmtK(Math.abs(liGap))+' surplus',null,liGap>0?'neg':'pos']].map(([l,v,t,cls])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv${cls?' '+cls:''}">${v}</span></div>`).join('');
   const diNeed=(+(($('di-inc')?.value)||0))*.60,diGap=diNeed-(+(($('di-exist')?.value)||0));
   const dir=$('di-result');if(dir)dir.innerHTML=[['Recommended (60%)',fmt(diNeed)+'/mo',"<strong>DI</strong>60% of gross monthly income is the industry standard."],['Existing benefit',fmt(+(($('di-exist')?.value)||0))+'/mo'],['Gap',diGap>0?fmt(diGap)+'/mo gap':fmt(Math.abs(diGap))+'/mo surplus',null,diGap>0?'neg':'pos']].map(([l,v,t,cls])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv${cls?' '+cls:''}">${v}</span></div>`).join('');
   const ltcTotal=(+(($('ltc-daily')?.value)||300))*365*(+(($('ltc-period')?.value)||3));
-  const ltcr=$('ltc-result');if(ltcr)ltcr.innerHTML=[['Benefit pool',fmtK(ltcTotal),"<strong>LTC pool</strong>Daily benefit Ã— 365 Ã— benefit years."],['Est. annual premium',fmt(+(($('ltc-age1')?.value)||48)<55?2200:3800)+'/yr']].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
+  const ltcr=$('ltc-result');if(ltcr)ltcr.innerHTML=[['Benefit pool',fmtK(ltcTotal),"<strong>LTC pool</strong>Daily benefit × 365 × benefit years."],['Est. annual premium',fmt(+(($('ltc-age1')?.value)||48)<55?2200:3800)+'/yr']].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
   const pcGap=(+(($('pc-nw')?.value)||0))-(+(($('pc-umb')?.value)||0));
   const pcr=$('pc-result');if(pcr)pcr.innerHTML=`<div class="result-row"><span class="rl">Status</span><span class="rv"><span class="badge ${pcGap>0?'bg-r':'bg-g'}">${pcGap>0?'Increase to '+fmtK(+(($('pc-nw')?.value)||0)):'Adequate'}</span></span></div>`;
-  metricCards('ins-summary',[{lbl:'Life ins. gap',val:fmtK(Math.max(0,liGap)),cls:liGap>0?'bad':'good',tip:"<strong>DIME method</strong>Debt + Income Ã— years + Mortgage + Education - existing coverage."},{lbl:'DI gap',val:fmt(Math.max(0,diGap))+'/mo',cls:diGap>0?'bad':'good',tip:"<strong>DI</strong>60% of gross monthly income is the industry standard."},{lbl:'LTC pool',val:fmtK(ltcTotal),tip:"<strong>LTC pool</strong>Daily benefit Ã— 365 Ã— benefit years."},{lbl:'Umbrella gap',val:pcGap>0?fmtK(pcGap):'None',cls:pcGap>0?'warn':'good'}]);
+  metricCards('ins-summary',[{lbl:'Life ins. gap',val:fmtK(Math.max(0,liGap)),cls:liGap>0?'bad':'good',tip:"<strong>DIME method</strong>Debt + Income × years + Mortgage + Education - existing coverage."},{lbl:'DI gap',val:fmt(Math.max(0,diGap))+'/mo',cls:diGap>0?'bad':'good',tip:"<strong>DI</strong>60% of gross monthly income is the industry standard."},{lbl:'LTC pool',val:fmtK(ltcTotal),tip:"<strong>LTC pool</strong>Daily benefit × 365 × benefit years."},{lbl:'Umbrella gap',val:pcGap>0?fmtK(pcGap):'None',cls:pcGap>0?'warn':'good'}]);
 
   // Social Security
   const n1=primaryLabel();
@@ -3461,11 +3496,11 @@ function recalc(){
   const ssTotal=(b1+b2)*12;
   const life1=ssHH.life1, life2=ssHH.life2;
   if(sp){
-    metricCards('ss-summary',[{lbl:n1+' monthly',val:fmt(b1),sub:'at age '+ca1,tip:"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."},{lbl:spouseLabel()+' / spousal',val:fmt(b2),sub:'at age '+ca2,tip:"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."},{lbl:'Combined monthly',val:fmt(b1+b2)},{lbl:'Lifetime combined',val:fmtK(life1+life2),tip:"<strong>Lifetime SS</strong>Monthly benefit Ã— 12 Ã— (life expectancy - claim age)."}]);
-    const ssr=$('ss-results');if(ssr)ssr.innerHTML='<div class="card-title">Benefit analysis</div>'+[[n1+' PIA at FRA',fmt(pia1)+'/mo',"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."],[n1+' at age '+ca1,fmt(b1)+'/mo'],[spouseLabel()+' benefit',fmt(b2)+'/mo'],['Combined monthly',fmt(b1+b2)+'/mo'],[n1+' lifetime',fmtK(life1),"<strong>Lifetime SS</strong>Monthly benefit Ã— 12 Ã— (life expectancy - claim age)."],[spouseLabel()+' lifetime',fmtK(life2),"<strong>Lifetime SS</strong>Monthly benefit Ã— 12 Ã— (life expectancy - claim age)."]].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
+    metricCards('ss-summary',[{lbl:n1+' monthly',val:fmt(b1),sub:'at age '+ca1,tip:"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."},{lbl:spouseLabel()+' / spousal',val:fmt(b2),sub:'at age '+ca2,tip:"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."},{lbl:'Combined monthly',val:fmt(b1+b2)},{lbl:'Lifetime combined',val:fmtK(life1+life2),tip:"<strong>Lifetime SS</strong>Monthly benefit × 12 × (life expectancy - claim age)."}]);
+    const ssr=$('ss-results');if(ssr)ssr.innerHTML='<div class="card-title">Benefit analysis</div>'+[[n1+' PIA at FRA',fmt(pia1)+'/mo',"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."],[n1+' at age '+ca1,fmt(b1)+'/mo'],[spouseLabel()+' benefit',fmt(b2)+'/mo'],['Combined monthly',fmt(b1+b2)+'/mo'],[n1+' lifetime',fmtK(life1),"<strong>Lifetime SS</strong>Monthly benefit × 12 × (life expectancy - claim age)."],[spouseLabel()+' lifetime',fmtK(life2),"<strong>Lifetime SS</strong>Monthly benefit × 12 × (life expectancy - claim age)."]].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
   } else {
-    metricCards('ss-summary',[{lbl:n1+' monthly benefit',val:fmt(b1),sub:'at age '+ca1,tip:"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."},{lbl:'Annual benefit',val:fmt(b1*12)},{lbl:'Lifetime benefit',val:fmtK(life1),tip:"<strong>Lifetime SS</strong>Monthly benefit Ã— 12 Ã— (life expectancy - claim age)."}]);
-    const ssr=$('ss-results');if(ssr)ssr.innerHTML='<div class="card-title">Benefit analysis</div>'+[[n1+' PIA at FRA',fmt(pia1)+'/mo',"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."],[n1+' benefit at age '+ca1,fmt(b1)+'/mo'],[n1+' annual benefit',fmt(b1*12)+'/yr'],[n1+' lifetime benefit',fmtK(life1),"<strong>Lifetime SS</strong>Monthly benefit Ã— 12 Ã— (life expectancy - claim age)."]].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
+    metricCards('ss-summary',[{lbl:n1+' monthly benefit',val:fmt(b1),sub:'at age '+ca1,tip:"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."},{lbl:'Annual benefit',val:fmt(b1*12)},{lbl:'Lifetime benefit',val:fmtK(life1),tip:"<strong>Lifetime SS</strong>Monthly benefit × 12 × (life expectancy - claim age)."}]);
+    const ssr=$('ss-results');if(ssr)ssr.innerHTML='<div class="card-title">Benefit analysis</div>'+[[n1+' PIA at FRA',fmt(pia1)+'/mo',"<strong>SS benefit</strong>PIA adjusted for claim age vs FRA (67). Delayed: +8%/yr to 70."],[n1+' benefit at age '+ca1,fmt(b1)+'/mo'],[n1+' annual benefit',fmt(b1*12)+'/yr'],[n1+' lifetime benefit',fmtK(life1),"<strong>Lifetime SS</strong>Monthly benefit × 12 × (life expectancy - claim age)."]].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
   }
   const ssc=$('ss-scenarios');if(ssc)ssc.innerHTML=ssHH.scenarios.map(sc=>`<div class="mc${sc.age===ca1?' good':''}"><div class="lbl">Age ${sc.age}</div><div class="val" style="font-size:16px">${fmt(sc.monthly)}/mo</div><div class="sub">${fmtK(sc.lifetime)} lifetime</div></div>`).join('');
 
@@ -3486,8 +3521,8 @@ function recalc(){
   const wr=withdrawalRate/100,portNeed=Math.round((realNeed-ssInc)/wr),retGap=portNeed-futP;
   const rothPct=total>0?Math.round(rothTotal/total*100):0;
   const rlb=$('ret-limits-banner');if(rlb)rlb.innerHTML=`<span><strong>401(k) limit 2026:</strong> $${L.k401.toLocaleString()} (+$${L.k401_catchup.toLocaleString()} age 50+, +$${L.k401_catchup_6063.toLocaleString()} ages 60–63)</span><span><strong>IRA:</strong> $${L.ira.toLocaleString()} (+$${L.ira_catchup.toLocaleString()} age 50+)</span><span><strong>HSA family:</strong> $${L.hsa_family.toLocaleString()}</span><span style="color:var(--gtx)"><i class="ti ti-check" style="font-size:11px"></i> All confirmed — IRS Notice 2025-67 &amp; Rev. Proc. 2025-19</span>`;
-  metricCards('ret-summary',[{lbl:'Total investable',val:fmtK(total)},{lbl:'Roth %',val:pct(rothPct),sub:fmtK(rothTotal)+' Roth',cls:rothPct>=25?'good':rothPct>=10?'warn':'bad',tip:"<strong>Roth vs pre-tax</strong>Higher Roth % = lower RMDs, better estate flexibility."},{lbl:'Projected at '+retAge,val:fmtK(futP),sub:yrs+' yrs at '+pct(rate*100),tip:"<strong>Projected portfolio</strong>FV = PV(1+r)^n + PMTÃ—((1+r)^n-1)/r."},{lbl:'Gap / surplus',val:(retGap<=0?'+':'-')+fmtK(Math.abs(retGap)),cls:retGap<=0?'good':'bad',tip:"<strong>Surplus / shortfall</strong>Projected portfolio minus needed."}]);
-  const rr=$('ret-results');if(rr)rr.innerHTML='<div class="card-title">Retirement readiness</div>'+[['Years to retirement',''+yrs],['Pre-tax portfolio',fmtK(preTaxRetire),'<strong>Pre-tax accounts</strong>Taxable at ordinary income rates at withdrawal. Subject to RMDs at 73.'],['Roth portfolio',fmtK(rothTotal),`<strong>Roth accounts</strong>Tax-free withdrawals. No RMDs. Currently ${rothPct}% of total.`],['Taxable brokerage',fmtK(brokerage),'<strong>Taxable brokerage</strong>Subject to capital gains tax. No contribution limits or withdrawal restrictions.'],['Projected portfolio',fmtK(futP),"<strong>Projected portfolio</strong>FV = PV(1+r)^n + PMTÃ—((1+r)^n-1)/r."],['Inflation-adj. need',fmt(realNeed)+'/yr','<strong>Inflation-adjusted need</strong>Desired income Ã— (1+inflation)^years.'],['SS + pension offset',fmt(ssInc)+'/yr'],['Portfolio required ('+withdrawalRate.toFixed(1)+'%)',fmtK(portNeed),"<strong>Portfolio needed</strong>(Income need - SS/pension) ÷ withdrawal rate."],['Status',retGap<=0?'<span class="badge bg-g">On track</span>':'<span class="badge bg-r">Shortfall: '+fmtK(retGap)+'</span>',"<strong>Surplus / shortfall</strong>Projected portfolio minus needed."]].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
+  metricCards('ret-summary',[{lbl:'Total investable',val:fmtK(total)},{lbl:'Roth %',val:pct(rothPct),sub:fmtK(rothTotal)+' Roth',cls:rothPct>=25?'good':rothPct>=10?'warn':'bad',tip:"<strong>Roth vs pre-tax</strong>Higher Roth % = lower RMDs, better estate flexibility."},{lbl:'Projected at '+retAge,val:fmtK(futP),sub:yrs+' yrs at '+pct(rate*100),tip:"<strong>Projected portfolio</strong>FV = PV(1+r)^n + PMT×((1+r)^n-1)/r."},{lbl:'Gap / surplus',val:(retGap<=0?'+':'-')+fmtK(Math.abs(retGap)),cls:retGap<=0?'good':'bad',tip:"<strong>Surplus / shortfall</strong>Projected portfolio minus needed."}]);
+  const rr=$('ret-results');if(rr)rr.innerHTML='<div class="card-title">Retirement readiness</div>'+[['Years to retirement',''+yrs],['Pre-tax portfolio',fmtK(preTaxRetire),'<strong>Pre-tax accounts</strong>Taxable at ordinary income rates at withdrawal. Subject to RMDs at 73.'],['Roth portfolio',fmtK(rothTotal),`<strong>Roth accounts</strong>Tax-free withdrawals. No RMDs. Currently ${rothPct}% of total.`],['Taxable brokerage',fmtK(brokerage),'<strong>Taxable brokerage</strong>Subject to capital gains tax. No contribution limits or withdrawal restrictions.'],['Projected portfolio',fmtK(futP),"<strong>Projected portfolio</strong>FV = PV(1+r)^n + PMT×((1+r)^n-1)/r."],['Inflation-adj. need',fmt(realNeed)+'/yr','<strong>Inflation-adjusted need</strong>Desired income × (1+inflation)^years.'],['SS + pension offset',fmt(ssInc)+'/yr'],['Portfolio required ('+withdrawalRate.toFixed(1)+'%)',fmtK(portNeed),"<strong>Portfolio needed</strong>(Income need - SS/pension) ÷ withdrawal rate."],['Status',retGap<=0?'<span class="badge bg-g">On track</span>':'<span class="badge bg-r">Shortfall: '+fmtK(retGap)+'</span>',"<strong>Surplus / shortfall</strong>Projected portfolio minus needed."]].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
 
   // Estate
   const home2=+(($('e-home')?.value)||0),eInv=+(($('e-inv')?.value)||0),eRet=+(($('e-ret')?.value)||0);
@@ -3759,7 +3794,7 @@ const RECS2=[
    clientBenefit:'State tax savings now, plus tax-free growth for college costs.',
    advisorWhy:d=>`Utah resident with education goal. my529 deduction: up to $4,410/beneficiary/yr at 4.85% UT rate.`,
    advisorDesc:d=>'Utah allows state income tax deduction on my529 contributions up to $4,410/beneficiary regardless of income. After 15 years, unused funds can roll to Roth IRA ($35K lifetime).',
-   advisorBenefit:d=>`$4,410 Ã— 4.85% = $214/beneficiary/yr in state tax savings. ${d.numDeps||1} children: $${Math.round(4410*0.0485*(d.numDeps||1)).toLocaleString()}/yr.`,
+   advisorBenefit:d=>`$4,410 × 4.85% = $214/beneficiary/yr in state tax savings. ${d.numDeps||1} children: $${Math.round(4410*0.0485*(d.numDeps||1)).toLocaleString()}/yr.`,
    advisorDownside:d=>'Non-qualified withdrawals subject to income tax + 10% penalty on earnings.',
    impact:d=>`$${Math.round(4410*0.0485*(d.numDeps||1)).toLocaleString()}/yr state tax savings`,
    trigger:d=>d.hasFamilyGoal&&d.t_state==='UT'},
@@ -3916,7 +3951,7 @@ const RECS2=[
    clientDesc:'Based on the DIME method (Debt + Income + Mortgage + Education), your current life insurance coverage leaves a gap.',
    clientBenefit:'Your family is financially protected no matter what happens.',
    advisorWhy:d=>`DIME need ${fmtK(d.liNeed||0)} minus existing coverage ${fmtK(d.liExist||0)} = gap of ${fmtK(Math.max(0,(d.liNeed||0)-(d.liExist||0)))}.`,
-   advisorDesc:d=>'DIME calculation: Debt + Income (70% Ã— replace years Ã— income) + Mortgage + Education - existing coverage. Term life is most cost-effective.',
+   advisorDesc:d=>'DIME calculation: Debt + Income (70% × replace years × income) + Mortgage + Education - existing coverage. Term life is most cost-effective.',
    advisorBenefit:d=>`Closing the ${fmtK(Math.max(0,(d.liNeed||0)-(d.liExist||0)))} gap with term insurance provides high-leverage protection.`,
    advisorDownside:d=>'Insurability requires underwriting. Apply before any health changes. Compare group vs individual coverage.',
    impact:d=>`${fmtK(Math.max(0,(d.liNeed||0)-(d.liExist||0)))} coverage gap`,
@@ -3938,7 +3973,7 @@ const RECS2=[
    clientDesc:'The median annual cost of a private room in a nursing home is over $100,000. Long-term care insurance can protect your retirement savings.',
    clientBenefit:'Protect your retirement assets and avoid being a financial burden on your family.',
    advisorWhy:d=>`Age ${d.ltcAge1||d.age1} is in the 42–62 optimal LTC planning window — better health, lower premiums, better insurability.`,
-   advisorDesc:d=>'Options: (1) Traditional LTC insurance. (2) Hybrid life/LTC product. (3) Self-insure with large portfolio. Benefit pool should target 3–4 years Ã— local cost. Inflation rider critical.',
+   advisorDesc:d=>'Options: (1) Traditional LTC insurance. (2) Hybrid life/LTC product. (3) Self-insure with large portfolio. Benefit pool should target 3–4 years × local cost. Inflation rider critical.',
    advisorBenefit:d=>`Insuring ${fmtK(d.ltcPool||0)} LTC need with premium of $3,000–$5,000/yr = significant leverage. Preserves portfolio for heirs.`,
    advisorDownside:d=>'Premium increases possible (traditional). Hybrid products have higher upfront cost.',
    impact:d=>`${fmtK(d.ltcPool||0)} benefit pool`,
@@ -3984,7 +4019,7 @@ const RECS2=[
    clientBenefit:'Reduce your estate while helping your family now.',
    advisorWhy:d=>`Net estate ${fmtK(d.netEstate||0)} with ${d.numDeps||0} potential recipients. Annual gifting systematically removes value from taxable estate.`,
    advisorDesc:d=>'$19K/recipient/yr (2026). Couple: $38K/recipient. Can front-load 5 years of 529 contributions ($95K single/$190K couple). Gift appreciated stock to low-income family members.',
-   advisorBenefit:d=>`${d.numDeps||1} recipients Ã— $38,000/yr (couple) = ${fmtK((d.numDeps||1)*38000)}/yr removed from estate tax-free.`,
+   advisorBenefit:d=>`${d.numDeps||1} recipients × $38,000/yr (couple) = ${fmtK((d.numDeps||1)*38000)}/yr removed from estate tax-free.`,
    advisorDownside:d=>'Annual tracking required. Gift tax return required above $19K per recipient.',
    impact:d=>`${fmtK((d.numDeps||1)*38000)}/yr estate reduction`,
    trigger:d=>(d.netEstate||0)>500000},
@@ -4093,7 +4128,7 @@ const RECS2=[
    clientDesc:'Key-person insurance pays the business a death benefit to cover the cost of replacing a critical person, repaying loans, or surviving the transition.',
    clientBenefit:'Business continuity protection — keeps the company alive through a critical loss.',
    advisorWhy:d=>`Business owner identified. Key-person life and disability insurance protects business value and loan obligations.`,
-   advisorDesc:d=>'Coverage amount: typically 5–10Ã— key person\'s annual compensation, or amount of business loans guaranteed by key person. Premium is not deductible, but death benefit is generally tax-free. Also consider business overhead expense (BOE) disability policy.',
+   advisorDesc:d=>'Coverage amount: typically 5–10× key person\'s annual compensation, or amount of business loans guaranteed by key person. Premium is not deductible, but death benefit is generally tax-free. Also consider business overhead expense (BOE) disability policy.',
    advisorBenefit:d=>'Protects SBA loans, business lines of credit, and client/supplier relationships during ownership transition.',
    advisorDownside:d=>'Premium paid by business with after-tax dollars. Must have insurable interest. Policy owned by business.',
    impact:d=>null,
@@ -4846,11 +4881,11 @@ function propagateCoreFields(){
   const combinedMonthly=Math.round(((+c.c1inc||0)+(hasSpouse()?+c.c2inc||0:0))/12);
   if(combinedMonthly)sv('di-inc',combinedMonthly);
 
-  // â”€â”€ Tax: HSA annual = monthly HSA Ã— 12 (always sync, even if 0) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Tax: HSA annual = monthly HSA × 12 (always sync, even if 0) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const hsaAnnual=(+c.hsa||0)*12;
   sv('t-hsa',hsaAnnual||0);
 
-  // â”€â”€ Tax: 401k annual = monthly Ã— 12 (always sync) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Tax: 401k annual = monthly × 12 (always sync) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const annual401k=((+c.k401c1||0)+(hasSpouse()?+c.k401c2||0:0))*12;
   sv('t-401k',annual401k||0);
 
@@ -5436,7 +5471,7 @@ function calculateRothConversionScenario(conversionAmount, baseParams){
          fedTaxNoConv, ssBenefit, baseAgi} = baseParams;
 
   // SS taxation interaction: conversion raises MAGI → more SS becomes taxable
-  // IRS: combined income = AGI + 0.5Ã—SS. Conversion increases AGI.
+  // IRS: combined income = AGI + 0.5×SS. Conversion increases AGI.
   const ssExtraIncome = ssBenefit > 0
     ? Math.max(0, calcSSTaxable(baseAgi + conversionAmount, ssBenefit, filingStatus)
                - calcSSTaxable(baseAgi, ssBenefit, filingStatus))
@@ -5625,7 +5660,7 @@ function calcSETax(netSEIncome, w2Income, filingStatus) {
   const se = pdc.se;
   if (!netSEIncome || netSEIncome <= 0) return { seTax:0, ssPortionSE:0, mcPortionSE:0, addlMC:0, deductibleHalf:0 };
 
-  // SE income subject to tax = net SE income Ã— 92.35%
+  // SE income subject to tax = net SE income × 92.35%
   const seAdj = Math.round(netSEIncome * (se.se_earnings_adj || 0.9235));
 
   // SS portion: only up to wage base minus any W2 wages already subject to SS
@@ -5786,7 +5821,7 @@ function calcQBI(netQBIIncome, taxableIncome, w2WagesPaid, filingStatus) {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function calcNIIT(agi, investmentIncome, filingStatus) {
   // investmentIncome: dividends + LTCG + interest + rental income (passive)
-  // NIIT = 3.8% Ã— min(NII, AGI excess over threshold)
+  // NIIT = 3.8% × min(NII, AGI excess over threshold)
   const f = pdc.fed;
   const isMFJ = filingStatus === 'mfj';
   const threshold = isMFJ ? (f.niit_threshold_mfj || 250000) : (f.niit_threshold_single || 200000);
@@ -5927,7 +5962,7 @@ function calcACASubsidy(magi, householdSize, stateCode, age1, age2, filingStatus
   const benchmarkMonthly2 = age2 ? getACABenchmarkRate(stateCode, age2) : 0;
   const totalBenchmark = benchmarkMonthly + benchmarkMonthly2;
 
-  // Max household contribution = FPL% contribution cap Ã— MAGI / 12
+  // Max household contribution = FPL% contribution cap × MAGI / 12
   const contribPct = getACAContribPct(fplPct);
   const maxMonthlyContrib = Math.round(magi * contribPct / 12);
 
