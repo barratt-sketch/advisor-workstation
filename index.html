@@ -2777,11 +2777,12 @@ function c2n(){return spouseLabel();}
 function applySpouseVisibility(){
   const show=hasSpouse();
   document.querySelectorAll('.spouse-section').forEach(el=>{
+    el.classList.toggle('show',show);
     el.classList.toggle('hidden',!show);
   });
   // The no-spouse placeholder card
   const noSp=$('no-spouse-card');if(noSp)noSp.style.display=show?'none':'flex';
-  const spCard=$('spouse-card');if(spCard)spCard.classList.toggle('hidden',!show);
+  const spCard=$('spouse-card');if(spCard){spCard.classList.toggle('show',show);spCard.classList.toggle('hidden',!show);}
   // Update filing status default when toggling
   const filingEl=$('filing');const tfilingEl=$('t-filing');
   if(filingEl&&!hasSpouse()&&filingEl.value==='mfj'){filingEl.value='single';}
