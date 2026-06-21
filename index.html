@@ -224,6 +224,8 @@ nav{
   position:sticky;top:52px;height:calc(100vh - 52px);
   overflow-y:auto;border-right:1px solid rgba(255,255,255,.05);
 }
+nav{position:relative}
+nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relative;z-index:1}
 nav::-webkit-scrollbar{width:3px}
 nav::-webkit-scrollbar-track{background:transparent}
 nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
@@ -846,6 +848,8 @@ input[readonly]:focus{outline:none;box-shadow:none}
 /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media(max-width:900px){
   nav{width:170px}
+nav{position:relative}
+nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relative;z-index:1}
   .two-col,.three-col{grid-template-columns:1fr}
   .roth-scenarios{grid-template-columns:1fr}
   .roth-opt-header{grid-template-columns:1fr 1fr}
@@ -855,6 +859,8 @@ input[readonly]:focus{outline:none;box-shadow:none}
 }
 @media(max-width:640px){
   nav{position:fixed;left:-200px;top:52px;height:calc(100vh - 52px);z-index:150;transition:left .22s}
+nav{position:relative}
+nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relative;z-index:1}
   nav.open{left:0;box-shadow:var(--sh3)}
   .content{padding:1rem}
   .topbar{padding:0 1rem}
@@ -1186,20 +1192,26 @@ input[readonly]:focus{outline:none;box-shadow:none}
 
 <div class="main-wrap">
 <nav>
+  <svg id="sidebar-topo" viewBox="0 0 220 800" preserveAspectRatio="xMidYMin slice" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:170px;left:0;width:100%;height:calc(100% - 170px);pointer-events:none;z-index:0;opacity:1">
+    <path d="M-10,30 Q55,15 110,32 Q165,48 230,28" fill="none" stroke="rgba(55,138,221,.18)" stroke-width="1.2"/>
+    <path d="M-10,70 Q55,55 110,72 Q165,88 230,68" fill="none" stroke="rgba(55,138,221,.15)" stroke-width="1.1"/>
+    <path d="M-10,110 Q55,97 110,112 Q165,128 230,108" fill="none" stroke="rgba(55,138,221,.12)" stroke-width="1"/>
+    <path d="M-10,150 Q55,138 110,152 Q165,168 230,148" fill="none" stroke="rgba(55,138,221,.10)" stroke-width="1"/>
+    <path d="M-10,200 Q55,186 110,202 Q165,218 230,196" fill="none" stroke="rgba(55,138,221,.09)" stroke-width="1"/>
+    <path d="M-10,250 Q55,237 110,252 Q165,266 230,246" fill="none" stroke="rgba(55,138,221,.08)" stroke-width="1"/>
+    <path d="M-10,310 Q55,297 110,312 Q165,326 230,306" fill="none" stroke="rgba(55,138,221,.07)" stroke-width="1"/>
+    <path d="M-10,380 Q55,367 110,382 Q165,396 230,376" fill="none" stroke="rgba(55,138,221,.06)" stroke-width="1"/>
+    <path d="M-10,460 Q55,447 110,462 Q165,476 230,456" fill="none" stroke="rgba(55,138,221,.06)" stroke-width="1"/>
+    <path d="M-10,550 Q55,537 110,552 Q165,566 230,546" fill="none" stroke="rgba(55,138,221,.05)" stroke-width="1"/>
+    <path d="M-10,650 Q55,637 110,652 Q165,666 230,646" fill="none" stroke="rgba(55,138,221,.04)" stroke-width="1"/>
+    <path d="M180,0 Q200,20 220,10 L220,0Z" fill="none" stroke="rgba(55,138,221,.14)" stroke-width="1.2"/>
+    <path d="M155,0 Q185,25 215,18 Q222,16 220,8" fill="none" stroke="rgba(55,138,221,.10)" stroke-width="1"/>
+    <path d="M130,0 Q165,30 200,26 Q215,24 218,16" fill="none" stroke="rgba(55,138,221,.07)" stroke-width="1"/>
+    <path d="M-10,0 Q10,18 0,38 Q-8,55 -10,50Z" fill="none" stroke="rgba(55,138,221,.12)" stroke-width="1"/>
+    <path d="M-10,0 Q18,22 8,48 Q0,65 -10,62Z" fill="none" stroke="rgba(55,138,221,.08)" stroke-width="1"/>
+  </svg>
   <div class="sidebar-brand">
     <img class="sidebar-brand-logo" src="ChatGPT Image Jun 20, 2026, 04_32_05 PM.png" alt="Beacon">
-  </div>
-  <div style="position:relative;height:72px;overflow:hidden;margin:-4px 0 4px;flex-shrink:0">
-    <svg viewBox="0 0 220 72" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
-      <path d="M-10,20 Q55,8 110,22 Q165,36 230,18" fill="none" stroke="rgba(55,138,221,.18)" stroke-width="1.2"/>
-      <path d="M-10,34 Q55,22 110,36 Q165,50 230,32" fill="none" stroke="rgba(55,138,221,.14)" stroke-width="1.1"/>
-      <path d="M-10,48 Q55,38 110,50 Q165,62 230,46" fill="none" stroke="rgba(55,138,221,.10)" stroke-width="1"/>
-      <path d="M-10,60 Q55,52 110,63 Q165,72 230,58" fill="none" stroke="rgba(55,138,221,.07)" stroke-width="1"/>
-      <path d="M160,0 Q185,10 210,5 Q225,2 230,8 L230,0Z" fill="none" stroke="rgba(55,138,221,.15)" stroke-width="1.2"/>
-      <path d="M170,0 Q192,14 215,10 L230,10 Q228,4 220,2 Q200,0 170,0Z" fill="none" stroke="rgba(55,138,221,.10)" stroke-width="1"/>
-      <path d="M-10,10 Q20,2 40,14 Q55,24 40,35 Q22,44 -10,40Z" fill="none" stroke="rgba(55,138,221,.12)" stroke-width="1"/>
-      <path d="M-10,18 Q15,12 32,22 Q44,30 32,40 Q16,48 -10,44Z" fill="none" stroke="rgba(55,138,221,.08)" stroke-width="1"/>
-    </svg>
   </div>
   <div class="nav-section">Client</div>
   <button class="nav-btn active" onclick="showSection('client',this)"><i class="ti ti-user-circle"></i>Client Info</button>
@@ -3284,7 +3296,7 @@ function liveProfile(){
   const filingMap={mfj:'Married filing jointly',single:'Single',hoh:'Head of household'};
   const st=stateMap[$('state')?.value]||'';const fl=filingMap[$('filing')?.value]||'';
   const initials=((n1c[0]||'?')+(n2c?n2c[0]||'':'')).toUpperCase();
-  [\av].forEach(el=>{if(el)el.textContent=initials;});
+  [$('av')].forEach(el=>{if(el)el.textContent=initials;});
   const full=n2c?(n1c+' & '+n2c):(n1c||'New Client');
   [$('p-name'),$('hdr-name')].forEach(el=>{if(el)el.textContent=full;});
   const ageTxt=age1?'Age '+(age1+(n2c&&age2?' / '+age2:'')):'' ;
