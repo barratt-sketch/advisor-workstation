@@ -491,6 +491,7 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
   background:linear-gradient(135deg, var(--sidebar) 0%, var(--sidebar2) 100%);
   border-radius:var(--rl);padding:1.25rem 1.5rem;
   display:flex;align-items:center;gap:1.1rem;
+  flex-wrap:wrap;position:relative;overflow:hidden;
   margin-bottom:1.25rem;box-shadow:var(--sh2);
 }
 .profile-av{
@@ -506,6 +507,14 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
   border-radius:10px;font-size:11px;font-weight:500;
   background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);
 }
+.hero-topo-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.profile-hero>*:not(.hero-topo-svg){position:relative;z-index:1}
+.profile-stats-ribbon{width:100%;display:flex;gap:0;padding-top:11px;border-top:1px solid rgba(255,255,255,.1);margin-top:8px;flex-wrap:wrap;row-gap:8px}
+.psr-stat{display:flex;flex-direction:column;gap:2px;padding:0 18px;border-right:1px solid rgba(255,255,255,.1)}
+.psr-stat:first-child{padding-left:0}
+.psr-stat:last-child{border-right:none}
+.psr-val{font-size:14px;font-weight:600;color:#fff;letter-spacing:-.025em}
+.psr-lbl{font-size:9.5px;color:rgba(255,255,255,.42);text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-top:1px}
 
 /* â”€â”€ CI tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .ci-tabs{
@@ -1206,6 +1215,7 @@ input[readonly]:focus{outline:none;box-shadow:none}
   <div class="page-hdr"><div><div class="page-title">Client Information</div><div class="page-subtitle">Household profile &amp; planning data</div></div></div>
 
   <div class="profile-hero">
+    <svg class="hero-topo-svg" viewBox="0 0 800 120" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><path d="M800,0 Q700,5 660,30 Q625,52 640,85 Q655,112 720,120 L800,120Z" fill="none" stroke="rgba(55,138,221,.18)" stroke-width="1.5"/><path d="M800,10 Q715,14 678,38 Q645,60 658,90 Q670,114 735,120 L800,120Z" fill="none" stroke="rgba(55,138,221,.14)" stroke-width="1.2"/><path d="M800,22 Q732,24 698,47 Q667,68 678,95 Q688,115 748,120 L800,120Z" fill="none" stroke="rgba(55,138,221,.11)" stroke-width="1"/><path d="M800,36 Q750,36 720,56 Q692,75 700,98 Q708,115 762,120 L800,120Z" fill="none" stroke="rgba(55,138,221,.08)" stroke-width="1"/><path d="M-20,0 Q40,15 60,45 Q75,70 55,95 Q35,115 -20,118Z" fill="none" stroke="rgba(55,138,221,.12)" stroke-width="1.2"/><path d="M-20,12 Q28,25 46,52 Q58,74 40,97 Q22,114 -20,116Z" fill="none" stroke="rgba(55,138,221,.08)" stroke-width="1"/><path d="M50,35 Q150,22 250,38 Q350,54 450,36 Q550,18 650,30 Q720,38 800,28" fill="none" stroke="rgba(55,138,221,.09)" stroke-width="1"/><path d="M50,55 Q150,44 250,58 Q350,72 450,56 Q550,40 650,50 Q720,56 800,48" fill="none" stroke="rgba(55,138,221,.07)" stroke-width="1"/><path d="M50,75 Q150,66 250,78 Q350,90 450,76 Q550,62 650,70 Q720,76 800,68" fill="none" stroke="rgba(55,138,221,.05)" stroke-width="1"/></svg>
     <div class="profile-av" id="p-av">?</div>
     <div style="flex:1">
       <div class="profile-name" id="p-name">New Client</div>
@@ -1213,6 +1223,7 @@ input[readonly]:focus{outline:none;box-shadow:none}
       <div class="profile-badges" id="p-badges"></div>
     </div>
     <button class="btn-sm remove-client-btn" onclick="removeActiveClient()"><i class="ti ti-user-minus"></i> Remove client</button>
+    <div id="p-stats" class="profile-stats-ribbon" style="display:none"></div>
   </div>
 
   <div class="ci-tabs">
@@ -3283,7 +3294,20 @@ function liveProfile(){
   const badges=$('p-badges');
   if(badges){const goals=activeGoalSet();badges.innerHTML=`<span class="badge bg-b">${$('risk')?.value||'Moderate'}</span>`+[...goals].slice(0,2).map(gid=>{const g=GOAL_PRESETS.find(x=>x.id===gid);return g?`<span class="badge bg-g">${g.label}</span>`:''}).join('');}
   if(c){c.c1name=$('c1name')?.value||'';if(hasSpouse())c.c2name=$('c2name')?.value||'';renderClientSwitcher();}
-  updateLabels();
+  // Stats ribbon
+  const statsEl=$('p-stats');
+  if(statsEl){
+    const inc=(+c?.c1inc||0)+(hasSpouse()?(+c?.c2inc||0):0);
+    const statsData=[
+      ...(nw!==0?[{val:fmtK(nw),lbl:'Net Worth'}]:[]),
+      ...(inc>0?[{val:fmtK(inc),lbl:'Annual Income'}]:[]),
+      ...(age1>0?[{val:(hasSpouse()&&age2)?age1+' / '+age2:String(age1),lbl:(hasSpouse()&&age2)?'Ages':'Age'}]:[]),
+      ...(preTax>0?[{val:fmtK(preTax),lbl:'Pre-tax Savings'}]:[]),
+      ...(rothA>0?[{val:fmtK(rothA),lbl:'Roth'}]:[]),
+    ];
+    if(statsData.length>0){statsEl.innerHTML=statsData.map(s=>'<div class="psr-stat"><div class="psr-val">'+s.val+'</div><div class="psr-lbl">'+s.lbl+'</div></div>').join('');statsEl.style.display='flex';}
+    else{statsEl.style.display='none';}
+  }  updateLabels();
   // Show/hide business owner fields
   const etype=$('c1etype')?.value||'';
   const bizCard=$('business-owner-fields');
