@@ -224,7 +224,6 @@ nav{
   position:sticky;top:52px;height:calc(100vh - 52px);
   overflow-y:auto;border-right:1px solid rgba(255,255,255,.05);
 }
-nav{position:relative}
 nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relative;z-index:1}
 nav::-webkit-scrollbar{width:3px}
 nav::-webkit-scrollbar-track{background:transparent}
@@ -848,7 +847,6 @@ input[readonly]:focus{outline:none;box-shadow:none}
 /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media(max-width:900px){
   nav{width:170px}
-nav{position:relative}
 nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relative;z-index:1}
   .two-col,.three-col{grid-template-columns:1fr}
   .roth-scenarios{grid-template-columns:1fr}
@@ -859,7 +857,6 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
 }
 @media(max-width:640px){
   nav{position:fixed;left:-200px;top:52px;height:calc(100vh - 52px);z-index:150;transition:left .22s}
-nav{position:relative}
 nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relative;z-index:1}
   nav.open{left:0;box-shadow:var(--sh3)}
   .content{padding:1rem}
@@ -891,7 +888,7 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
 /* Sidebar brand header */
 .sidebar-brand{
   display:flex;align-items:center;justify-content:center;
-  padding:16px 12px 12px;
+  padding:16px 0 12px;
   border-bottom:1px solid rgba(255,255,255,.07);
   margin-bottom:4px;
   text-decoration:none;
@@ -960,16 +957,7 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
 /* Responsive: hide sidebar tagline on narrow sidebar */
 @media(max-width:900px){.sidebar-brand-tagline{display:none}}
 @media(max-width:640px){
-  .sidebar-brand{padding:10px 14px 8px}
-  .sidebar-brand-logo{height:28px}
-  .topbar-logo-img{height:28px}
-  
-}
-
-
-/* â”€â”€ Rec Center — rec2 cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.rec2{
-  background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl);
+  .sidebar-brand{padding:16px 0 12px;border:1px solid var(--bd);border-radius:var(--rl);
   padding:12px 14px;margin-bottom:6px;cursor:pointer;
   transition:border-color .15s,box-shadow .15s,transform .15s;
 }
