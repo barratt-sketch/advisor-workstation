@@ -1483,6 +1483,7 @@ input[readonly]:focus{outline:none;box-shadow:none}
       </div>
     </div>
   </div>
+  <div id="cf-waterfall" class="card"><div class="card-title">Income Waterfall</div><div style="color:var(--tx3);font-size:13px">Loading chart...</div></div>
   <div class="card" id="cf-bars"></div>
   <div id="ir-cf"></div>
 </div>
@@ -2894,6 +2895,42 @@ document.addEventListener('click',function(){
   if(sw)sw.classList.remove('open');
   if(chip)chip.classList.remove('open');
 });
+function renderCFWaterfall(cfg){
+  const el=$('cf-waterfall');if(!el)return;
+  const{grossInc,preTaxDed,taxes,fixedAnn,varAnn,postTaxSav}=cfg;
+  const netTH=Math.max(0,grossInc-preTaxDed-taxes);
+  const surplus=netTH-fixedAnn-varAnn-postTaxSav;
+  if(!grossInc){el.innerHTML='<div class="card-title">Income waterfall</div><div style="color:var(--tx3);font-size:13px;padding:12px 0">Enter income to see waterfall</div>';return;}
+  const steps=[
+    {lbl:['Gross','Income'],    low:0,                          high:grossInc,           type:'total',  clr:'#378ADD'},
+    {lbl:['Pre-tax','Savings'], low:Math.max(0,grossInc-preTaxDed), high:grossInc,       type:'deduct', clr:'#8B6FF0'},
+    {lbl:['Taxes','& FICA'],    low:Math.max(0,grossInc-preTaxDed-taxes), high:Math.max(0,grossInc-preTaxDed), type:'deduct',clr:'#E05252'},
+    {lbl:['Net','Take-Home'],   low:0,                          high:netTH,              type:'sub',    clr:'#1D9E75'},
+    {lbl:['Fixed','Expenses'],  low:Math.max(0,netTH-fixedAnn), high:netTH,              type:'deduct', clr:'#4A90C7'},
+    {lbl:['Variable','Exp.'],   low:Math.max(0,netTH-fixedAnn-varAnn), high:Math.max(0,netTH-fixedAnn), type:'deduct',clr:'#F59E0B'},
+    {lbl:['Post-tax','Savings'],low:Math.max(0,netTH-fixedAnn-varAnn-postTaxSav), high:Math.max(0,netTH-fixedAnn-varAnn), type:'deduct',clr:'#8B6FF0'},
+    {lbl:[surplus>=0?'Surplus':'Deficit',''],low:0,high:Math.abs(surplus),type:surplus>=0?'surplus':'deficit',clr:surplus>=0?'#1D9E75':'#E05252'},
+  ];
+  const maxV=grossInc||1;
+  const W=760,padL=4,padR=4,padT=26,padB=46,cH=180,nC=steps.length;
+  const cW=(W-padL-padR)/nC,bW=cW*0.58;
+  const sy=v=>padT+cH-(v/maxV*cH);
+  let bars='',conns='',lbls='',vals='';
+  steps.forEach((s,i)=>{
+    const bx=padL+i*cW+(cW-bW)/2,cx=padL+i*cW+cW/2;
+    const top=sy(s.high),bot=sy(Math.max(0,s.low)),bh=Math.max(2,bot-top),rr=Math.min(3,bh/2);
+    bars+=`<rect x="${bx.toFixed(1)}" y="${top.toFixed(1)}" width="${bW.toFixed(1)}" height="${bh.toFixed(1)}" rx="${rr}" fill="${s.clr}" opacity="${s.type==='deduct'?'0.82':'1'}"/>`;
+    const v=s.high-s.low;
+    if(bh>10&&v>0){const vt=v>=10000?'$'+Math.round(v/1000)+'K':v>0?'$'+Math.round(v).toLocaleString():'';vals+=`<text x="${cx.toFixed(1)}" y="${(top-4).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="var(--tx2)" font-family="system-ui,sans-serif">${vt}</text>`;}
+    s.lbl.forEach((ln,li)=>{if(!ln)return;lbls+=`<text x="${cx.toFixed(1)}" y="${(padT+cH+padB-(s.lbl.filter(l=>l).length-1-li)*14-6).toFixed(1)}" text-anchor="middle" font-size="10.5" fill="var(--tx2)" font-family="system-ui,sans-serif">${ln}</text>`;});
+    if(i<steps.length-1&&(s.type==='deduct'||s.type==='total'||s.type==='sub')){
+      const connY=s.type==='deduct'?sy(s.low):sy(s.high),nextBx=padL+(i+1)*cW+(cW-bW)/2;
+      conns+=`<line x1="${(bx+bW).toFixed(1)}" y1="${connY.toFixed(1)}" x2="${nextBx.toFixed(1)}" y2="${connY.toFixed(1)}" stroke="var(--bd2)" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+    }
+  });
+  el.innerHTML=`<div class="card-title">Income waterfall <span style="font-weight:400;font-size:11px;color:var(--tx3)">annual</span></div><svg viewBox="0 0 ${W} ${padT+cH+padB}" style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg"><line x1="${padL}" y1="${padT+cH}" x2="${W-padR}" y2="${padT+cH}" stroke="var(--bd)" stroke-width="1"/>${conns}${bars}${vals}${lbls}</svg>`;
+}
+
 function renderClientSwitcher(){
   const wrap=$('client-switcher');if(!wrap)return;
   wrap.innerHTML='';
@@ -3322,6 +3359,7 @@ function recalc(){
     {lbl:'Monthly surplus',val:(surplus>=0?'+':'')+fmt(surplus),cls:surplus>=0?'good':'bad'},
   ]);
   const cfBars=$('cf-bars');if(cfBars){const cats=[{n:'Fixed',v:totalFixed,c:'#378ADD'},{n:'Variable',v:totalVar,c:'#1D9E75'},{n:'Savings',v:totalSav,c:'#534AB7'}];cfBars.innerHTML='<div class="card-title">Monthly allocation</div>'+cats.map(ct=>`<div class="bar-row"><div class="bar-label"><span>${ct.n}</span><span>${fmt(ct.v)}/mo · ${Math.round(ct.v/monthly*100)}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.round(ct.v/monthly*100))}%;background:${ct.c}"></div></div></div>`).join('');}
+  renderCFWaterfall({grossInc,preTaxDed:((+(($('k401c1')?.value)||0))+k401c2Val)*12+hsaAnnual,taxes:grossInc*0.25,fixedAnn:totalFixed*12,varAnn:totalVar*12,postTaxSav:((+(($('ira')?.value)||0))+(+(($('brok')?.value)||0))+(+(($('sav529')?.value)||0)))*12});
 
   // Tax
   const fl=$('t-filing')?.value||'single';
@@ -3425,6 +3463,7 @@ function recalc(){
   const _stLabel=_stInfo.hasIncomeTax?`${_stInfo.name} (top rate: ${Math.round(_stInfo.rate*1000)/10}%)`:`${$('t-state')?.value||'UT'} (no income tax)`;
   const tb=$('tax-banner');if(tb)tb.innerHTML=`<span><strong>2026 std. deduction:</strong> ${fmt(stdDed)}</span><span><strong>LTCG 0%</strong> up to ${fmt(ltcg0)}</span><span><strong>State:</strong> ${_stLabel}</span><span><strong>401(k):</strong> $${L.k401.toLocaleString()} (+$${L.k401_catchup.toLocaleString()} catch-up)</span><span><strong>HSA family:</strong> $${L.hsa_family.toLocaleString()}</span>`;
   metricCards('tax-summary',[{lbl:'AGI',val:fmtK(agi),tip:"<strong>AGI</strong>W-2 minus 401(k), HSA, and above-the-line adjustments."},{lbl:'Taxable income',val:fmtK(taxableOrd),tip:"<strong>Taxable income</strong>AGI minus standard or itemized deduction."},{lbl:'Effective rate',val:pct(effRate),cls:effRate>30?'bad':effRate>22?'warn':'good',tip:"<strong>Effective rate</strong>Total taxes minus credits ÷ gross income."},{lbl:'Refund / due',val:(refund>=0?'+':'')+fmt(refund),cls:refund>=0?'good':'bad',tip:"<strong>Refund / due</strong>Taxes withheld minus federal tax owed after credits."}]);
+  renderCFWaterfall({grossInc,preTaxDed:k401t+hsaC,taxes:Math.max(0,totalTax),fixedAnn:totalFixed*12,varAnn:totalVar*12,postTaxSav:((+(($('ira')?.value)||0))+(+(($('brok')?.value)||0))+(+(($('sav529')?.value)||0)))*12});
   const tr=$('tax-results');if(tr)tr.innerHTML='<div class="card-title">Tax breakdown — 2026</div>'+[['AGI',fmt(agi),`<strong>AGI</strong>W-2 ($${fmtN(+w2)}), retirement dist. ($${fmtN(retDist)}), rental net ($${fmtN(rentalNetIncome)}), other ($${fmtN(otherInc)}), STCG ($${fmtN(cgST)}), ord. div. ($${fmtN(divOrd)}) minus 401(k) ($${fmtN(k401t)}), HSA ($${fmtN(hsaC)}), SE deductible half ($${fmtN(seDeductible)})${seHealthIns>0?', SE health ins ($'+fmtN(seHealthIns)+')':''}. Above-the-line adjustments reduce taxable income.`],
   ...(rentalInc>0?[[
     rentalNet>=0?'Net rental income':'Rental passive loss (allowed)',
