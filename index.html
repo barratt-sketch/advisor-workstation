@@ -1173,8 +1173,8 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
   </div>
   <div class="topbar-right">
     <div style="font-size:12px;color:var(--tx-inv3);display:flex;align-items:center;gap:10px">
-      <span><span id="plan-count" style="color:var(--green);font-weight:600">0</span> in plan</span>
-      <span><span id="rec-count" style="color:var(--amber);font-weight:600">0</span> triggered</span>
+      <span style="color:rgba(255,255,255,.9)"><span id="plan-count" style="color:#4ADE80;font-weight:700;font-size:15px">0</span> in plan</span>
+      <span style="color:rgba(255,255,255,.9)"><span id="rec-count" style="color:#FBBF24;font-weight:700;font-size:15px">0</span> triggered</span>
     </div>
     <div style="position:relative;display:inline-block" id="new-client-wrap">
       <button class="topbar-btn" onclick="toggleNewClientMenu(event)"><i class="ti ti-user-plus"></i> New client <i class="ti ti-chevron-down" style="font-size:12px;margin-left:2px"></i></button>
@@ -1820,7 +1820,7 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
     <input class="rc-search" id="rc-search" placeholder="Search recommendations..." oninput="renderRC()">
     <div class="rc-filter-wrap" id="rc-cat-filters"></div>
     <select class="rc-sort" id="rc-sort" onchange="renderRC()">
-      <option value="priority">Sort: Priority</option>
+      <option value="priority" selected>Sort: Priority</option>
       <option value="impact">Sort: Category</option>
       <option value="category">Sort: Category</option>
       <option value="complexity">Sort: Complexity</option>
