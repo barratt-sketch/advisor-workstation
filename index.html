@@ -3826,6 +3826,7 @@ function recalc(){
     food:+(($('food')?.value)||0),trans:+(($('trans')?.value)||0),
     health:+(($('health')?.value)||0),utils:+(($('utils')?.value)||0),
     insprem:+(($('insprem')?.value)||0),
+    rentalInc:+(($('t-rental-inc')?.value)||0),
     liGap,diGap,pcGap,
     ltcAge1:+(($('ltc-age1')?.value)||48),
     ssClaim1:ca1,ssPia1:pia1,ssPia2:pia2,ssLE1:le1s,ssTotal,
@@ -4019,7 +4020,7 @@ const RECS2=[
    advisorBenefit:d=>`Additional $${Math.max(0,8750-d.hsaAnnual).toLocaleString()}/yr in triple-tax-advantaged savings. ~$${Math.round(Math.max(0,8750-d.hsaAnnual)*0.30).toLocaleString()} immediate tax savings at 30% rate.`,
    advisorDownside:d=>'Requires HDHP enrollment. Cannot contribute if enrolled in Medicare.',
    impact:d=>`$${Math.round(Math.max(0,8750-d.hsaAnnual)*0.30).toLocaleString()} est. tax savings`,
-   trigger:d=>d.hsaAnnual<8750},
+   trigger:d=>d.hsaAnnual>0&&d.hsaAnnual<(L.hsa_family||8750)-500},
 
   {id:'irmaa_warning2',title:'IRMAA Medicare surcharge warning',cat:'Tax',priority:'High',complexity:'Moderate',icon:'ti-alert-triangle',
    clientWhy:'Your income could increase your Medicare costs in retirement.',
@@ -4322,7 +4323,7 @@ const RECS2=[
    advisorBenefit:d=>'Higher-growth assets in Roth compound tax-free vs creating taxable dividends/gains in taxable accounts.',
    advisorDownside:d=>'Requires coordinated rebalancing across accounts. Taxable account trades may create capital gains.',
    impact:d=>null,
-   trigger:d=>(d.rothTotal||0)>10000},
+   trigger:d=>(d.rothTotal||0)>25000&&(d.preTaxRetire||0)>25000&&(d.brokerage||0)>10000},
 
   // â”€â”€ EDUCATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {id:'edu_fund2',title:'Education savings plan (529)',cat:'Education',priority:'Medium',complexity:'Easy',icon:'ti-school',
@@ -4359,7 +4360,7 @@ const RECS2=[
    advisorBenefit:d=>'NUA strategy can convert ordinary income to LTCG rates. Diversification eliminates idiosyncratic single-stock risk.',
    advisorDownside:d=>'NUA election is irrevocable. Must be done as part of qualifying lump-sum distribution. Wash-sale rules apply.',
    impact:d=>null,
-   trigger:d=>d.hasFamilyGoal&&d.age1>0,
+   trigger:d=>(d.employerStockPct||0)>10,
    nextStep:'Review employer stock % of total portfolio. If over 10%, develop diversification plan with tax advisor.'},
 
   {id:'rebalance_trigger',cat:'Behavioral',title:'Portfolio rebalancing due',priority:'Medium',complexity:'Easy',icon:'ti-arrows-diagonal',
@@ -4494,7 +4495,7 @@ const RECS2=[
    advisorBenefit:d=>'Deferring $200K in capital gains at 15% = $30,000 more to invest. Repeated exchanges + step-up = permanent elimination.',
    advisorDownside:d=>'Strict timelines — miss the 45-day ID window and exchange fails. Cannot touch the proceeds. Must be investment property, not personal use.',
    impact:d=>null,
-   trigger:d=>(d.netEstate||0)>500000&&d.brokerage>0,
+   trigger:d=>(d.rentalInc||0)>0,
    nextStep:'Identify investment properties. If selling, engage qualified intermediary before close. Review 45/180-day timeline.'},
 
   // â”€â”€ COLLEGE FINANCIAL AID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -4543,7 +4544,7 @@ const RECS2=[
    advisorBenefit:d=>'Proper cost basis tracking can save significant taxes through lot selection. FIFO vs specific ID can result in vastly different tax outcomes.',
    advisorDownside:d=>'DeFi, staking, and airdrops add complexity. Some transactions may not have clear cost basis records.',
    impact:d=>null,
-   trigger:d=>d.hasFamilyGoal&&d.age1>0,
+   trigger:d=>(d.cryptoVal||0)>5000,
    nextStep:'Gather all exchange records and wallet transaction histories. Implement crypto tax software. Review prior year reporting for accuracy.'},
 
   {id:'crypto_washsale',cat:'Alternative Assets',title:'Crypto wash-sale strategy opportunity',priority:'Medium',complexity:'Easy',icon:'ti-currency-bitcoin',
@@ -4555,7 +4556,7 @@ const RECS2=[
    advisorBenefit:d=>'Harvesting $20,000 crypto loss offsets $20,000 of capital gains, saving $3,000–$4,000 in taxes at 15–20% LTCG rate.',
    advisorDownside:d=>'Congress may retroactively apply wash-sale rules. Stablecoin swaps may be treated as like-kind exchanges. Maintain careful records.',
    impact:d=>null,
-   trigger:d=>d.cg>0&&d.age1>0,
+   trigger:d=>(d.cryptoVal||0)>5000&&(d.cryptoGains||0)!==0,
    nextStep:'Review crypto portfolio for unrealized losses. Compare to capital gains realized this year. Execute before year-end.'},
 
   // â”€â”€ TAX-LOSS CARRY-FORWARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -4568,7 +4569,7 @@ const RECS2=[
    advisorBenefit:d=>`Existing loss carryforward applied to ${fmtK(d.cg)} in gains could eliminate tax entirely.`,
    advisorDownside:d=>'Cannot carry losses back (only forward). Suspended losses in passive activities have separate rules.',
    impact:d=>d.cg>0?`Potential offset of ${fmtK(d.cg)} in gains`:'Review prior returns',
-   trigger:d=>d.cg>0&&d.brokerage>0},
+   trigger:d=>d.cg>0&&d.brokerage>50000&&(d.cryptoGains||0)<0},
 
   // â”€â”€ IRMAA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {id:'irmaa_warning2',cat:'Tax',priority:'High',complexity:'Moderate',icon:'ti-stethoscope',
