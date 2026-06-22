@@ -1214,6 +1214,7 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
   <button class="nav-btn" onclick="showSection('retirement',this)"><i class="ti ti-chart-line"></i>Retirement<span class="nb" id="nb-ret" style="display:none">0</span></button>
   <button class="nav-btn" onclick="showSection('montecarlo',this)"><i class="ti ti-topology-star-3"></i>Monte Carlo</button>
   <button class="nav-btn" onclick="showSection('estate',this)"><i class="ti ti-building-estate"></i>Estate<span class="nb" id="nb-est" style="display:none">0</span></button>
+  <button class="nav-btn" onclick="showSection('charity',this)"><i class="ti ti-heart-handshake"></i>Charity<span class="nb" id="nb-chr" style="display:none">0</span></button>
   <div class="nav-divider"></div>
   <div class="nav-section">Insights</div>
   <button class="nav-btn" onclick="showSection('recommendations',this)"><i class="ti ti-sparkles"></i>Rec Center<span class="nb" id="nb-all" style="display:none">0</span></button>
@@ -1527,7 +1528,7 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
         <div class="field-row"><div class="field"><label>Short-term capital gains <span style="font-size:9px;color:var(--amber);background:#FFF8E1;padding:1px 5px;border-radius:3px;font-weight:500">Ordinary rate</span></label><input id="t-cg-st" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>Qualified dividends <span style="font-size:9px;color:var(--green);background:var(--gbg);padding:1px 5px;border-radius:3px;font-weight:500">LTCG rate</span></label><input id="t-div-qual" type="number" placeholder="0" oninput="recalc()"></div></div>
         <div class="field-row"><div class="field"><label>Ordinary dividends <span style="font-size:9px;color:var(--tx2);background:var(--bg2);padding:1px 5px;border-radius:3px;font-weight:500">Ordinary rate</span></label><input id="t-div-ord" type="number" placeholder="0" oninput="recalc()"></div><div class="field"></div></div>
         <div class="field-row"><div class="field"><label>Traditional 401(k) pretax <span class="synced-label">Synced</span></label><input id="t-401k" type="number" placeholder="0" readonly title="Edit monthly 401(k) contributions in Cash Flow tab"></div><div class="field"><label>HSA contribution <span class="synced-label">Synced</span></label><input id="t-hsa" type="number" placeholder="0" readonly title="Edit monthly HSA in Cash Flow tab"></div></div>
-        <div class="field-row"><div class="field"><label>Itemized deductions</label><input id="t-item" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>Other adjustments</label><input id="t-adj" type="number" placeholder="0" oninput="recalc()"></div></div>
+        <div class="field-row"><div class="field"><label>Itemized deductions <span class="synced-label">Synced from Charity</span></label><input id="t-item" type="number" placeholder="0" readonly></div><div class="field"><label>Other adjustments</label><input id="t-adj" type="number" placeholder="0" oninput="recalc()"></div></div>
         <div class="field-row"><div class="field"><label>ISO stock option income <span style="font-size:9px;color:var(--red);background:#FDE8E8;padding:1px 5px;border-radius:3px;font-weight:500">AMT preference</span></label><input id="t-iso" type="number" placeholder="0" oninput="recalc()" title="ISO spread at exercise is an AMT preference item. Enter the spread (FMV minus exercise price) for shares exercised this year."></div><div class="field"></div></div>
         <div class="field-row" id="se-extra-fields" style="display:none"><div class="field"><label>SE health ins. premium (annual) <span class="synced-label">Self-employed</span></label><input id="t-se-health" type="number" placeholder="0" oninput="recalc()" title="100% deductible above-the-line for self-employed"></div><div class="field"><label>W-2 wages paid to employees <span class="synced-label">QBI limit</span></label><input id="t-w2-paid" type="number" placeholder="0" oninput="recalc()" title="Used for QBI W-2 wage limitation above phase-out threshold"></div></div>
         <div class="field-row"><div class="field"><label>Tax credits</label><input id="t-cred" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>Taxes withheld (W-4)</label><input id="t-with" type="number" placeholder="0" oninput="recalc()"></div></div>
@@ -1756,6 +1757,42 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
   </div>
 </div>
 
+<!-- CHARITY & TITHING -->
+<div id="charity" class="section">
+  <div class="page-hdr"><div><div class="page-title">Charity &amp; Tithing</div><div class="page-subtitle">Giving optimization &amp; itemization strategy</div></div></div>
+  <div class="cards" id="chr-summary"></div>
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <div class="card-title">Tithing</div>
+        <div style="margin-top:.75rem">
+          <div class="field-row"><div class="field"><label>Tithe rate (%)</label><input id="ch-tithe-pct" type="number" placeholder="10" value="10" oninput="recalc()"></div><div class="field"><label>Based on</label><select id="ch-tithe-basis" onchange="recalc()"><option value="gross">Gross income</option><option value="net">Net take-home</option></select></div></div>
+          <div class="field-row"><div class="field"><label>Calculated tithe <span class="synced-label">Auto</span></label><input id="ch-tithe-calc" type="number" placeholder="0" readonly></div><div class="field"><label>Override (manual)</label><input id="ch-tithe-override" type="number" placeholder="0" oninput="recalc()" title="Leave blank to use calculated amount"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Other charitable giving</div>
+        <div style="margin-top:.75rem">
+          <div class="field-row"><div class="field"><label>Cash donations</label><input id="ch-cash" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>Appreciated stock (FMV)</label><input id="ch-stock" type="number" placeholder="0" oninput="recalc()"></div></div>
+          <div class="field-row"><div class="field"><label>Stock cost basis</label><input id="ch-stock-basis" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>DAF contribution</label><input id="ch-daf" type="number" placeholder="0" oninput="recalc()"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Itemization breakdown</div>
+        <div style="margin-top:.75rem">
+          <div class="field-row"><div class="field"><label>SALT paid (state + property tax)</label><input id="ch-salt" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>SALT cap <span class="synced-label">Data Center</span></label><input id="ch-salt-cap" type="number" readonly></div></div>
+          <div class="field-row"><div class="field"><label>Mortgage interest</label><input id="ch-mort-int" type="number" placeholder="0" oninput="recalc()"></div><div class="field"><label>Medical expenses</label><input id="ch-medical" type="number" placeholder="0" oninput="recalc()"></div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="chr-itemization"></div>
+      <div class="card" id="chr-strategies"></div>
+      <div id="ir-chr"></div>
+    </div>
+  </div>
+</div>
+
 <!-- RECOMMENDATION CENTER -->
 <div id="recommendations" class="section">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
@@ -1900,6 +1937,7 @@ const L={
   hsa_family:8750,hsa_self:4400,
   roth_start_mfj:242000,roth_end_mfj:252000,roth_start_single:153000,roth_end_single:168000,
   estate_exempt:15000000,gift_excl:19000,qcd:111000,comp_limit:360000,simple:17000,
+  salt_cap_mfj:10000,salt_cap_single:5000,charity_cash_agi_limit:60,charity_stock_agi_limit:30,
 };
 
 
@@ -2666,6 +2704,10 @@ function syncPDCtoL() {
   L.estate_exempt    = f.estate_exempt;
   L.gift_excl        = f.gift_excl;
   L.qcd              = f.qcd_limit;
+  L.salt_cap_mfj     = f.salt_cap_mfj;
+  L.salt_cap_single  = f.salt_cap_single;
+  L.charity_cash_agi = f.charity_cash_agi_limit;
+  L.charity_stock_agi= f.charity_stock_agi_limit;
   // Sync RMD table
   if (PDC?.rmd?.table) {
     Object.assign(RMD_TABLE, PDC.rmd.table);
@@ -2738,6 +2780,10 @@ function blankClient(){
     'ltc-daily':'300','ltc-period':'3','pc-umb':'',
     // â”€â”€ SS specifics (PIA and claiming ages — not duplicated elsewhere) â”€â”€â”€â”€â”€â”€
     'ss-pia1':'','ss-pia2':'','ss-ca1':'67','ss-ca2':'65',
+    // â”€â”€ Charity & tithing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    'ch-tithe-pct':'10','ch-tithe-basis':'gross','ch-tithe-override':'',
+    'ch-cash':'','ch-stock':'','ch-stock-basis':'','ch-daf':'',
+    'ch-salt':'','ch-mort-int':'','ch-medical':'',
     // â”€â”€ Tax specifics (not duplicated — capital gains, deductions, etc.) â”€â”€â”€â”€â”€
     't-cg':'','t-item':'','t-adj':'','t-cred':'','t-with':'',
     // NOTE: t-w2, t-filing, t-state, t-hsa, t-401k, ss-le1, ss-le2, ss-by1,
@@ -2781,6 +2827,10 @@ const SCALAR_FIELDS=[
   'r-ret','r-inf',
   // â”€â”€ Tax projection assumptions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   'tp-years','tp-wagegrowth','tp-yield','tp-roth-conv',
+  // â”€â”€ Charity & tithing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  'ch-tithe-pct','ch-tithe-basis','ch-tithe-override',
+  'ch-cash','ch-stock','ch-stock-basis','ch-daf',
+  'ch-salt','ch-mort-int','ch-medical',
   // â”€â”€ Tax (module-specific user inputs only — NOT t-401k/t-hsa which are computed)
   't-cg','t-cg-st','t-div-qual','t-div-ord','t-ret-dist','t-rental-inc','t-rental-exp','t-other-inc','t-iso','t-item','t-adj','t-cred','t-with','t-est-tax','t-se-health','t-w2-paid',
 ];
@@ -3396,6 +3446,21 @@ function recalc(){
   const cfBars=$('cf-bars');if(cfBars){const cats=[{n:'Fixed',v:totalFixed,c:'#378ADD'},{n:'Variable',v:totalVar,c:'#1D9E75'},{n:'Savings',v:totalSav,c:'#534AB7'}];cfBars.innerHTML='<div class="card-title">Monthly allocation</div>'+cats.map(ct=>`<div class="bar-row"><div class="bar-label"><span>${ct.n}</span><span>${fmt(ct.v)}/mo · ${Math.round(ct.v/monthly*100)}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,Math.round(ct.v/monthly*100))}%;background:${ct.c}"></div></div></div>`).join('');}
   renderCFWaterfall({grossInc,preTaxDed:((+(($('k401c1')?.value)||0))+k401c2Val)*12+hsaAnnual,taxes:grossInc*0.25,fixedAnn:totalFixed*12,varAnn:totalVar*12,postTaxSav:((+(($('ira')?.value)||0))+(+(($('brok')?.value)||0))+(+(($('sav529')?.value)||0)))*12});
 
+  // Pre-compute itemized deductions from Charity module before Tax reads t-item
+  const _fl=$('t-filing')?.value||'single';
+  const _saltCap=_fl==='mfj'?(L.salt_cap_mfj||10000):(L.salt_cap_single||5000);
+  const _chSalt=+(($('ch-salt')?.value)||0);
+  const _chMortInt=+(($('ch-mort-int')?.value)||0);
+  const _chMedical=+(($('ch-medical')?.value)||0);
+  const _chTithePct=+(($('ch-tithe-pct')?.value)||10);
+  const _chTitheBasis=$('ch-tithe-basis')?.value||'gross';
+  const _chTitheBase=_chTitheBasis==='gross'?grossInc:Math.max(0,grossInc*0.75);
+  const _chTithe=+(($('ch-tithe-override')?.value)||0)||Math.round(_chTitheBase*_chTithePct/100);
+  const _chOther=+(($('ch-cash')?.value)||0)++(($('ch-stock')?.value)||0)++(($('ch-daf')?.value)||0);
+  const _totalChar=_chTithe+_chOther;
+  const _preItem=Math.min(_chSalt,_saltCap)+_chMortInt+Math.max(0,_chMedical-grossInc*0.075)+_totalChar;
+  if($('t-item'))$('t-item').value=Math.round(_preItem);
+
   // Tax
   const fl=$('t-filing')?.value||'single';
   const brackets=fl==='mfj'?L.br_mfj:fl==='hoh'?L.br_hoh:L.br_single;
@@ -3546,6 +3611,66 @@ function recalc(){
     }
     return [];
   })())].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
+
+  // Charity & Tithing
+  const chTithePct=+(($('ch-tithe-pct')?.value)||10);
+  const chTitheBasis=$('ch-tithe-basis')?.value||'gross';
+  const chTitheBase=chTitheBasis==='gross'?grossInc:Math.max(0,grossInc-totalTax);
+  const chTitheCalc=Math.round(chTitheBase*chTithePct/100);
+  const chTitheOverride=+(($('ch-tithe-override')?.value)||0);
+  const chTithe=chTitheOverride>0?chTitheOverride:chTitheCalc;
+  if($('ch-tithe-calc'))$('ch-tithe-calc').value=chTitheCalc;
+  const chCash=+(($('ch-cash')?.value)||0);
+  const chStock=+(($('ch-stock')?.value)||0);
+  const chStockBasis=+(($('ch-stock-basis')?.value)||0);
+  const chDaf=+(($('ch-daf')?.value)||0);
+  const totalCharitable=chTithe+chCash+chStock+chDaf;
+  const chSalt=+(($('ch-salt')?.value)||0);
+  const saltCap=fl==='mfj'?(L.salt_cap_mfj||10000):(L.salt_cap_single||5000);
+  const saltDed=Math.min(chSalt,saltCap);
+  if($('ch-salt-cap'))$('ch-salt-cap').value=saltCap;
+  const chMortInt=+(($('ch-mort-int')?.value)||0);
+  const chMedical=+(($('ch-medical')?.value)||0);
+  const medDed=Math.max(0,chMedical-agi*0.075);
+  const totalItemized=saltDed+chMortInt+medDed+totalCharitable;
+  const stdDedAmt=deduction;
+  const itemizeBenefit=totalItemized-stdDedAmt;
+  const shouldItemize=totalItemized>stdDedAmt;
+  // Sync to tax module t-item field
+  if($('t-item'))$('t-item').value=Math.round(totalItemized);
+  // Charity summary cards
+  const chAge1=getAge('c1dob');
+  const qcdEligible=chAge1>=70;
+  const qcdLimit=L.qcd||111000;
+  const avoidedCG=chStock>chStockBasis?chStock-chStockBasis:0;
+  const taxSavings=shouldItemize?Math.round(totalCharitable*(effRate/100)):0;
+  metricCards('chr-summary',[
+    {lbl:'Annual tithe',val:fmtK(chTithe),sub:chTithePct+'% of '+(chTitheBasis==='gross'?'gross':'net')},
+    {lbl:'Total charitable',val:fmtK(totalCharitable),sub:'all giving'},
+    {lbl:shouldItemize?'Itemize saves':'Std ded. better',val:(itemizeBenefit>=0?'+':'')+fmt(Math.round(itemizeBenefit)),cls:shouldItemize?'good':'warn'},
+    {lbl:'Tax savings',val:fmtK(taxSavings),sub:'from deduction',cls:taxSavings>0?'good':''},
+  ]);
+  // Itemization comparison card
+  const chrItem=$('chr-itemization');
+  if(chrItem)chrItem.innerHTML='<div class="card-title">Itemized vs. standard deduction</div>'+
+    [['SALT (capped at '+fmt(saltCap)+')',fmt(saltDed),chSalt>saltCap?'<strong>SALT cap</strong>You paid '+fmt(chSalt)+' but can only deduct '+fmt(saltCap)+' (TCJA cap).':''],
+    ['Mortgage interest',fmt(chMortInt),''],
+    ['Medical (over 7.5% AGI)',fmt(medDed),chMedical>0?'<strong>Medical</strong>Only expenses exceeding 7.5% of AGI ('+fmt(Math.round(agi*0.075))+') are deductible.':''],
+    ['Charitable giving',fmt(totalCharitable),''],
+    ['<strong>Total itemized</strong>','<strong>'+fmt(Math.round(totalItemized))+'</strong>',''],
+    ['Standard deduction ('+fl.toUpperCase()+')','<strong>'+fmt(stdDedAmt)+'</strong>',''],
+    [shouldItemize?'<span style="color:var(--green)">Itemize — saves '+fmt(Math.round(itemizeBenefit))+'</span>':'<span style="color:var(--amber)">Standard deduction is better by '+fmt(Math.round(-itemizeBenefit))+'</span>','',''],
+    ].map(([l,v,t])=>'<div class="result-row"><span class="rl">'+l+(t?' '+tip(t):'')+'</span><span class="rv">'+v+'</span></div>').join('');
+  // Strategy cards
+  const chrStrat=$('chr-strategies');
+  if(chrStrat){
+    let strats='<div class="card-title">Giving strategies</div>';
+    if(qcdEligible)strats+='<div class="result-row" style="background:var(--gbg);border-radius:6px;padding:8px 10px;margin-bottom:6px"><span class="rl"><strong>QCD eligible</strong> — Age '+chAge1+' qualifies for Qualified Charitable Distributions up to '+fmt(qcdLimit)+'/yr from IRA. Tithing paid via QCD reduces AGI directly.</span></div>';
+    if(!shouldItemize&&totalCharitable>0)strats+='<div class="result-row" style="background:#FFF8E1;border-radius:6px;padding:8px 10px;margin-bottom:6px"><span class="rl"><strong>Bunching opportunity</strong> — You\'re '+fmt(Math.round(-itemizeBenefit))+' below the standard deduction. Consider doubling 2 years of giving into 1 year ('+fmt(totalCharitable*2)+') to clear the threshold, then take standard deduction the off-year.</span></div>';
+    if(avoidedCG>0)strats+='<div class="result-row" style="background:var(--gbg);border-radius:6px;padding:8px 10px;margin-bottom:6px"><span class="rl"><strong>Appreciated stock</strong> — Donating stock with '+fmt(avoidedCG)+' unrealized gain avoids LTCG tax while deducting full FMV.</span></div>';
+    if(totalCharitable>10000)strats+='<div class="result-row" style="padding:8px 10px;margin-bottom:6px"><span class="rl"><strong>Donor Advised Fund</strong> — Front-load multiple years of giving into a DAF for a large deduction in a high-income year, then distribute to church/charities over time.</span></div>';
+    chrStrat.innerHTML=strats;
+  }
 
   // Insurance
   const liNeed=(+(($('li-inc1')?.value)||0)*+(($('li-yrs')?.value)||20)*.7)+(+(($('li-debt')?.value)||0))+(+(($('li-edu')?.value)||0));
@@ -6458,7 +6583,8 @@ function getAMTLiability(tentativeMinTax, regularTax) {
     c['ltc-age1']='48';c['ltc-age2']='46';c['ltc-daily']='300';c['ltc-period']='3';
     c['pc-nw']='900000';c['pc-umb']='1000000';
     c['ss-by1']='1976';c['ss-pia1']='2800';c['ss-by2']='1978';c['ss-pia2']='1600';c['ss-ca1']='67';c['ss-ca2']='65';c['ss-le1']='85';c['ss-le2']='87';
-    c['t-w2']='205000';c['t-cg']='12000';c['t-401k']='18000';c['t-hsa']='8750';c['t-item']='34000';c['t-cred']='2000';c['t-with']='38000';c['t-filing']='mfj';c['t-state']='UT';
+    c['t-w2']='205000';c['t-cg']='12000';c['t-401k']='18000';c['t-hsa']='8750';c['t-item']='';c['t-cred']='2000';c['t-with']='38000';c['t-filing']='mfj';c['t-state']='UT';
+    c['ch-tithe-pct']='10';c['ch-tithe-basis']='gross';c['ch-salt']='12000';c['ch-mort-int']='14000';c['ch-medical']='2000';
     c['e-home']='650000';c['e-inv']='85000';c['e-ret']='548000';c['e-roth']='177000';c['e-li']='750000';c['e-oth']='80000';c['e-liab']='404000';
     clients=[c];activeId=c.id;
   }
