@@ -4160,25 +4160,25 @@ const RECS2=[
   // â”€â”€ CASH FLOW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {id:'emerg_fund2',title:'Build emergency fund',cat:'Cash Flow',priority:'Critical',complexity:'Easy',icon:'ti-first-aid-kit',
    clientWhy:'You don\'t have enough saved to handle an unexpected financial emergency.',
-   clientDesc:'Most financial planners recommend having 3–6 months of expenses saved in a readily accessible account.',
-   clientBenefit:'Financial security and peace of mind — a true safety net.',
-   advisorWhy:d=>`Savings rate ${pct(d.savRate)} suggests insufficient liquid reserves. Monthly expenses ~${fmt(d.monthly)}.`,
-   advisorDesc:d=>'Target 6-month buffer in HYSA at 4%+. Priority over additional investing. Once funded, redirect to investment accounts.',
-   advisorBenefit:d=>'Emergency fund prevents forced asset liquidation, credit card debt, and behavioral investing mistakes.',
-   advisorDownside:d=>'Opportunity cost of holding cash. Balance with employer match capture.',
-   impact:d=>null,
-   trigger:d=>d.savRate<8},
+   clientDesc:'Most financial planners recommend having 3-6 months of essential expenses saved in a readily accessible account (Kitces: emergency reserves are the foundation of any financial plan).',
+   clientBenefit:'Financial security and peace of mind — a true safety net that prevents you from tapping retirement accounts or going into debt during unexpected events.',
+   advisorWhy:d=>{const moExp=Math.max(1,(d.mortgage||0)+(d.loans||0)+(d.food||0)+(d.trans||0)+(d.health||0)+(d.utils||0)+(d.insprem||0));const liquid=(d.hsaBal||0)+(d.savBal||0);const months=moExp>0?Math.round(liquid/moExp*10)/10:0;return `Estimated ${months} months of liquid reserves vs. 3-6 month target. Monthly essential expenses ~${fmt(moExp)}.`;},
+   advisorDesc:d=>'Target 6-month buffer in HYSA at 4%+. Per Kitces, emergency fund size should scale with income volatility — W-2 employees need 3-6 months, self-employed/variable income need 6-12 months. Priority over additional investing.',
+   advisorBenefit:d=>'Emergency fund prevents forced asset liquidation at market lows, credit card debt spirals, and behavioral investing mistakes during stress.',
+   advisorDownside:d=>'Opportunity cost of holding cash vs. investing. Balance with employer match capture — always get the match first.',
+   impact:d=>{const moExp=Math.max(1,(d.mortgage||0)+(d.loans||0)+(d.food||0)+(d.trans||0)+(d.health||0)+(d.utils||0)+(d.insprem||0));return `Target: ${fmt(moExp*6)} (6 months)`;},
+   trigger:d=>{const moExp=(d.mortgage||0)+(d.loans||0)+(d.food||0)+(d.trans||0)+(d.health||0)+(d.utils||0)+(d.insprem||0);return moExp>0&&d.monthly>0;}},
 
   {id:'high_debt2',title:'Reduce high-interest debt',cat:'Cash Flow',priority:'High',complexity:'Easy',icon:'ti-credit-card',
-   clientWhy:'Your debt payments are taking a significant portion of your income.',
-   clientDesc:'High-interest debt typically costs more than you can earn investing. Eliminating it is one of the best financial moves you can make.',
-   clientBenefit:'More money available each month and a guaranteed high "return" by eliminating interest charges.',
-   advisorWhy:d=>`Debt payments ${fmt((d.loans||0)+(d.mortgage||0))}/mo = ${Math.round(((d.loans||0)+(d.mortgage||0))/Math.max(1,d.monthly)*100)}% of gross income.`,
-   advisorDesc:d=>'Apply debt avalanche (highest interest rate first) or snowball (smallest balance first). Redirect debt payments to investments once eliminated.',
-   advisorBenefit:d=>`Eliminating ${fmt(d.loans||0)}/mo in non-mortgage debt payments frees significant cash flow.`,
-   advisorDownside:d=>'Prioritizing debt payoff vs investing depends on rate. Rule: pay off debt above 6–7%.',
-   impact:d=>`${fmtK((d.loans||0)*12)}/yr in debt service`,
-   trigger:d=>(d.loans||0)>800},
+   clientWhy:'Your total debt payments are consuming a large share of your income, which limits your ability to save and invest.',
+   clientDesc:'The federal qualified mortgage standard caps total debt-to-income at 36%. Above that level, financial flexibility shrinks and risk increases. High-interest debt (above 6-7%) typically costs more than you can earn investing.',
+   clientBenefit:'More money available each month, reduced financial stress, and a guaranteed high "return" by eliminating interest charges.',
+   advisorWhy:d=>{const totalDebt=(d.mortgage||0)+(d.loans||0);const dti=d.monthly>0?Math.round(totalDebt/d.monthly*100):0;return `DTI ratio: ${dti}% (total debt ${fmt(totalDebt)}/mo vs. gross ${fmt(d.monthly)}/mo). Federal QM threshold: 36%. Kitces research: DTI above 36% correlates with significantly higher financial stress and lower savings rates.`;},
+   advisorDesc:d=>'Apply debt avalanche (highest rate first) or snowball (smallest balance first). Per Kitces, prioritize paying off debt above 6-7% before additional investing beyond employer match. Redirect freed payments to investment accounts.',
+   advisorBenefit:d=>`Eliminating ${fmt(d.loans||0)}/mo in non-mortgage debt payments frees ${fmtK((d.loans||0)*12)}/yr for savings.`,
+   advisorDownside:d=>'Debt payoff vs. investing is rate-dependent. Below 4-5%, investing may win long-term. Always capture full employer match first regardless.',
+   impact:d=>{const totalDebt=(d.mortgage||0)+(d.loans||0);const dti=d.monthly>0?Math.round(totalDebt/d.monthly*100):0;return `DTI: ${dti}% (target <36%)`;},
+   trigger:d=>{const totalDebt=(d.mortgage||0)+(d.loans||0);const dti=d.monthly>0?totalDebt/d.monthly:0;return dti>0.36&&d.monthly>0;}},
 
   {id:'cash_flow_surplus2',title:'Automate surplus savings',cat:'Cash Flow',priority:'Medium',complexity:'Easy',icon:'ti-trending-up',
    clientWhy:'You have more money coming in each month than going out — let\'s put it to work.',
@@ -4367,18 +4367,6 @@ const RECS2=[
    nextStep:'Schedule annual rebalancing review. Identify target allocation and current drift.'},
 
   // â”€â”€ BUSINESS OWNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  {id:'sep_ira',cat:'Business Owner',title:'SEP-IRA opportunity',priority:'High',complexity:'Easy',icon:'ti-briefcase',
-   clientWhy:'As a self-employed person or business owner, you can save significantly more for retirement than most employees.',
-   clientDesc:'A SEP-IRA lets you contribute up to 25% of net self-employment income — up to $69,000 in 2026 — and the contribution is tax-deductible.',
-   clientBenefit:'Dramatically higher retirement savings with immediate tax deduction.',
-   advisorWhy:d=>`Self-employed client or business owner. SEP-IRA allows contributions up to 25% of net SE income, max $69,000 (2026).`,
-   advisorDesc:d=>'SEP-IRA: simple, low-cost, high limits. Contribution deadline: tax filing deadline + extensions. Compare vs Solo 401(k): SEP allows no Roth, no loans, no catch-up. If client wants Roth contributions or catch-up, Solo 401(k) is better.',
-   advisorBenefit:d=>'Business owner earning $200K net: SEP-IRA allows $50,000 contribution → ~$15,000 in tax savings at 30% rate.',
-   advisorDownside:d=>'Must contribute same percentage for all eligible employees — Solo 401(k) is better if client has employees.',
-   impact:d=>null,
-   trigger:d=>d.c1etype==='Self-employed'||d.c1etype==='Business owner',
-   nextStep:'Confirm business income. Model contribution amount. Compare SEP-IRA vs Solo 401(k) based on employee count and Roth preference.'},
-
   {id:'solo_401k',cat:'Business Owner',title:'Solo 401(k) opportunity',priority:'High',complexity:'Moderate',icon:'ti-briefcase',
    clientWhy:'If you run your own business with no employees, you can access the same high retirement contribution limits as large corporations.',
    clientDesc:'A Solo 401(k) allows you to contribute both as an employee and employer, potentially saving over $60,000 per year — and you can add a Roth option.',
@@ -4779,7 +4767,16 @@ function computeRecs(d){
   d.wr=withdrawalRate;
   d.risk=$('risk')?.value||'Moderate';
 
-  triggeredRecs=RECS2.filter(r=>{try{return r.trigger(d);}catch(e){return false;}});
+  // Data completeness flags — suppress recs for modules with no data entered
+  const _hasCF=d.monthly>0&&(d.w2>0||d.bizIncome>0);
+  const _hasTax=d.w2>0||d.bizIncome>0;
+  const _hasRet=(d.preTaxRetire+d.rothTotal)>0||d.yrsToRet>0;
+  const _hasIns=d.w2>0;
+  const _hasEst=(d.netEstate||0)>0;
+  const _hasSS=(d.ssPia1||0)>0;
+  const _hasBiz=d.c1etype==='Self-employed'||d.c1etype==='Business owner';
+  const _catGuard={'Cash Flow':_hasCF,'Tax':_hasTax,'Retirement':_hasRet,'Insurance':_hasIns,'Estate':_hasEst,'Social Security':_hasSS,'Business Owner':_hasBiz,'Charity':_hasCF};
+  triggeredRecs=RECS2.filter(r=>{try{const cg=_catGuard[r.cat];if(cg===false)return false;return r.trigger(d);}catch(e){return false;}});
   window._triggered=triggeredRecs.length;
 }
 
