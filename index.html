@@ -3819,6 +3819,9 @@ function recalc(){
     w2,cg,agi,taxableOrd,effRate,itemized:item,hsaAnnual,brokerage,
     preTaxRetire,rothTotal,savRate,surplus,monthly,
     mortgage:+(($('mortgage')?.value)||0),loans:+(($('loans')?.value)||0),
+    food:+(($('food')?.value)||0),trans:+(($('trans')?.value)||0),
+    health:+(($('health')?.value)||0),utils:+(($('utils')?.value)||0),
+    insprem:+(($('insprem')?.value)||0),
     liGap,diGap,pcGap,
     ltcAge1:+(($('ltc-age1')?.value)||48),
     ssClaim1:ca1,ssPia1:pia1,ssPia2:pia2,ssLE1:le1s,ssTotal,
@@ -4167,7 +4170,7 @@ const RECS2=[
    advisorBenefit:d=>'Emergency fund prevents forced asset liquidation at market lows, credit card debt spirals, and behavioral investing mistakes during stress.',
    advisorDownside:d=>'Opportunity cost of holding cash vs. investing. Balance with employer match capture — always get the match first.',
    impact:d=>{const moExp=Math.max(1,(d.mortgage||0)+(d.loans||0)+(d.food||0)+(d.trans||0)+(d.health||0)+(d.utils||0)+(d.insprem||0));return `Target: ${fmt(moExp*6)} (6 months)`;},
-   trigger:d=>{const moExp=(d.mortgage||0)+(d.loans||0)+(d.food||0)+(d.trans||0)+(d.health||0)+(d.utils||0)+(d.insprem||0);return moExp>0&&d.monthly>0;}},
+   trigger:d=>{const moExp=(d.mortgage||0)+(d.loans||0)+(d.food||0)+(d.trans||0)+(d.health||0)+(d.utils||0)+(d.insprem||0);const liquid=(d.cashAccts||0);const months=moExp>0?liquid/moExp:99;return moExp>0&&d.monthly>0&&months<3;}},
 
   {id:'high_debt2',title:'Reduce high-interest debt',cat:'Cash Flow',priority:'High',complexity:'Easy',icon:'ti-credit-card',
    clientWhy:'Your total debt payments are consuming a large share of your income, which limits your ability to save and invest.',
