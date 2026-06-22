@@ -5027,9 +5027,13 @@ function renderRC(){
   if(search)recs=recs.filter(r=>(r.title+r.cat+(recMode==='client'?r.clientDesc:r.advisorDesc)).toLowerCase().includes(search));
 
   // Sort
-  if(sort==='priority')recs.sort((a,b)=>(PRIORITY_ORDER[a.priority]||9)-(PRIORITY_ORDER[b.priority]||9));
-  else if(sort==='category')recs.sort((a,b)=>a.cat.localeCompare(b.cat));
-  else if(sort==='complexity')recs.sort((a,b)=>['Easy','Moderate','Advanced'].indexOf(a.complexity)-['Easy','Moderate','Advanced'].indexOf(b.complexity));
+  recs.sort((a,b)=>{
+    const pa=(PRIORITY_ORDER[a.priority]??9),pb=(PRIORITY_ORDER[b.priority]??9);
+    if(pa!==pb)return pa-pb;
+    if(sort==='category')return a.cat.localeCompare(b.cat);
+    if(sort==='complexity')return ['Easy','Moderate','Advanced'].indexOf(a.complexity)-['Easy','Moderate','Advanced'].indexOf(b.complexity);
+    return 0;
+  });
 
   // Update subtitle
   const subtitle=$('rc-subtitle');
