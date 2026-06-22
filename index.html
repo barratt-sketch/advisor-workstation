@@ -3708,7 +3708,7 @@ function recalc(){
   const chMedical=+(($('ch-medical')?.value)||0);
   const medDed=Math.max(0,chMedical-agi*0.075);
   const totalItemized=saltDed+chMortInt+medDed+totalCharitable;
-  const stdDedAmt=deduction;
+  const stdDedAmt=stdDed;
   const itemizeBenefit=totalItemized-stdDedAmt;
   const shouldItemize=totalItemized>stdDedAmt;
   // Sync to tax module t-item field
