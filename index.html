@@ -3833,7 +3833,9 @@ function recalc(){
     age1:getAge('c1dob')||48,retGap,yrsToRet:yrs,
     netEstate:netE,probateExp,estLI:eLI,
     hasFamilyGoal,hasCharityGoal:activeGoalSet().has('charity'),
-    hasPension,hasSpouse:sp,t_state:$('t-state')?.value||'UT'
+    hasPension,hasSpouse:sp,t_state:$('t-state')?.value||'UT',
+    withheld:+(($('t-with')?.value)||0),fedTax,cred:+(($('t-cred')?.value)||0),
+    totalCharitable,c1etype:c?.c1etype||'W-2 employee'
   };
   // Expose bracket room for rec engine
   d.bracketRoom=getBracketRoom(taxableOrd,brackets);
@@ -4570,6 +4572,54 @@ const RECS2=[
    advisorDownside:d=>'Cannot carry losses back (only forward). Suspended losses in passive activities have separate rules.',
    impact:d=>d.cg>0?`Potential offset of ${fmtK(d.cg)} in gains`:'Review prior returns',
    trigger:d=>d.cg>0&&d.brokerage>50000&&(d.cryptoGains||0)<0},
+
+  // â”€â”€ W-4 WITHHOLDING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  {id:'w4_adjust',cat:'Tax',title:'Adjust W-4 withholding',priority:'High',complexity:'Easy',icon:'ti-file-dollar',
+   clientWhy:'You\'re having too much tax withheld from your paychecks, which means less money in your pocket each month.',
+   clientDesc:'A large tax refund feels good, but it means you gave the government an interest-free loan all year. That money could have been invested, paying down debt, or earning interest in a savings account.',
+   clientBenefit:'More take-home pay each month without changing your tax bill at all.',
+   advisorWhy:d=>{const refund=(d.withheld||0)-(d.fedTax||0)+(d.cred||0);return `Estimated refund: ${fmt(Math.round(refund))}. Over-withholding of ~${fmt(Math.round(refund/12))}/mo. Per Kitces, large refunds represent lost time-value-of-money and reduce cash flow available for savings goals.`;},
+   advisorDesc:d=>'Use IRS W-4 estimator to recalibrate. Target refund of $500-$1,000 (small buffer). Redirect freed cash flow to 401(k), HSA, or brokerage. Review after any life change (marriage, child, job change).',
+   advisorBenefit:d=>{const refund=(d.withheld||0)-(d.fedTax||0)+(d.cred||0);return `Freeing ~${fmt(Math.round(refund/12))}/mo in take-home pay = ${fmtK(Math.round(refund))}/yr redirected to savings.`;},
+   advisorDownside:d=>'Some clients prefer refunds psychologically. Under-withholding can trigger penalties if <90% of tax owed or <100% of prior year.',
+   impact:d=>{const refund=(d.withheld||0)-(d.fedTax||0)+(d.cred||0);return refund>5000?`${fmt(Math.round(refund/12))}/mo freed up`:null;},
+   trigger:d=>{const refund=(d.withheld||0)-(d.fedTax||0)+(d.cred||0);return refund>5000||refund<-2000;}},
+
+  // â”€â”€ TITHE VIA APPRECIATED STOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  {id:'tithe_stock',cat:'Charity',title:'Pay tithing with appreciated stock',priority:'High',complexity:'Moderate',icon:'ti-heart-handshake',
+   clientWhy:'You can pay your tithing in a way that saves you money on taxes without reducing your gift to the Church.',
+   clientDesc:'When you donate appreciated stock (held over 1 year) instead of cash, you get a tax deduction for the full market value AND avoid paying capital gains tax on the appreciation. The Church of Jesus Christ of Latter-day Saints accepts stock donations through its investment arm.',
+   clientBenefit:'Same tithing amount to the Church, but you keep more money by avoiding capital gains tax.',
+   advisorWhy:d=>`Total charitable giving ${fmtK(d.totalCharitable||0)}/yr. Brokerage ${fmtK(d.brokerage)} with ${fmtK(d.cg)} in realized gains. Per IRC 170(e), donating appreciated securities held >1yr gives FMV deduction while eliminating LTCG. Kitces identifies this as one of the highest-impact charitable strategies.`,
+   advisorDesc:d=>'Process: (1) Identify lots with highest unrealized gain. (2) Transfer shares to Church investment account or DAF. (3) Deduct full FMV. (4) Replace donated shares by purchasing with cash at new (higher) basis. Net effect: same tithing paid, LTCG eliminated, cost basis reset.',
+   advisorBenefit:d=>`Donating ${fmtK(Math.min(d.brokerage||0,(d.totalCharitable||0)))} in stock vs cash saves ~${fmtK(Math.round(Math.min(d.cg||0,(d.totalCharitable||0)*0.3)*0.15))} in avoided LTCG tax annually.`,
+   advisorDownside:d=>'Must hold shares >1yr for full FMV deduction. Short-term shares only deductible at cost basis. Stock donation AGI limit is 30% (vs 60% for cash).',
+   impact:d=>`~${fmtK(Math.round(Math.min(d.cg||0,(d.totalCharitable||0)*0.3)*0.15))}/yr in avoided LTCG`,
+   trigger:d=>(d.totalCharitable||0)>5000&&(d.brokerage||0)>25000&&(d.cg||0)>0},
+
+  // â”€â”€ MEGA BACKDOOR ROTH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  {id:'mega_backdoor_roth',cat:'Tax',title:'Mega backdoor Roth opportunity',priority:'High',complexity:'Advanced',icon:'ti-door-enter',
+   clientWhy:'There may be a way to contribute far more to your Roth accounts than the normal limits allow.',
+   clientDesc:'If your employer 401(k) plan allows after-tax contributions and in-plan Roth conversions, you can contribute up to $70,000 total (2026) and convert the after-tax portion to Roth. This is called the “mega backdoor Roth” and is one of the most powerful wealth-building strategies available.',
+   clientBenefit:'Dramatically accelerate tax-free Roth savings beyond normal contribution limits.',
+   advisorWhy:d=>{const rothPct=(d.preTaxRetire+d.rothTotal>0)?Math.round(d.rothTotal/(d.preTaxRetire+d.rothTotal)*100):0;return `Age ${d.age1}, income ${fmtK(d.w2)}, Roth ${rothPct}% of retirement. Per Kitces, mega backdoor Roth is the most powerful Roth accumulation strategy for high earners with plan access. IRC 415(c) allows total 401(k) contributions up to $70K (2026).`;},
+   advisorDesc:d=>'Requirements: (1) Plan must allow after-tax (non-Roth) contributions. (2) Plan must allow in-plan Roth conversions or in-service distributions. Check SPD or ask HR. Max after-tax = $70,000 - employee elective ($24,500) - employer match. Convert immediately to avoid gains accruing in after-tax bucket.',
+   advisorBenefit:d=>{const maxAfterTax=Math.max(0,70000-26500-(d.w2*0.05||0));return `Up to ${fmtK(maxAfterTax)}/yr in additional Roth contributions. Over 15 years at 7% = ${fmtK(Math.round(maxAfterTax*((Math.pow(1.07,15)-1)/0.07)))} in tax-free wealth.`;},
+   advisorDownside:d=>'Not all plans support this. Pro-rata rule does not apply (401k is separate from IRA for this purpose). SECURE 2.0 may affect future availability.',
+   impact:d=>{const maxAfterTax=Math.max(0,70000-26500-(d.w2*0.05||0));return `${fmtK(maxAfterTax)}/yr additional Roth`;},
+   trigger:d=>d.age1<60&&(d.w2||0)>150000&&d.c1etype==='W-2 employee'&&(d.rothTotal/(d.preTaxRetire+d.rothTotal+1))<0.4},
+
+  // â”€â”€ SPOUSAL IRA MAXIMIZATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  {id:'spousal_ira_max',cat:'Retirement',title:'Maximize spousal IRA contribution',priority:'Medium',complexity:'Easy',icon:'ti-users',
+   clientWhy:'Your spouse may not be contributing the maximum allowed to their own retirement account.',
+   clientDesc:'Both spouses can contribute up to $7,500/year to an IRA (2026), regardless of which spouse earns the income. This is often overlooked when one spouse works part-time or earns less.',
+   clientBenefit:'Additional tax-advantaged retirement savings that compounds over decades.',
+   advisorWhy:d=>{const iraAnn=(+(($('ira')?.value)||0))*12;const maxIRA=(L.ira||7500)*2;return `Current household IRA contributions: ${fmtK(iraAnn)}/yr vs maximum ${fmtK(maxIRA)}/yr for two spouses. Per IRC 219(c), spousal IRA allows contribution based on household income. Kitces notes this is frequently overlooked for part-time working spouses.`;},
+   advisorDesc:d=>'Verify both spouses are maxing IRAs. Consider Roth vs Traditional based on current vs future marginal rate. If AGI exceeds Roth limits, use backdoor Roth for both spouses. Spousal contribution is allowed even if one spouse has no earned income (filing MFJ).',
+   advisorBenefit:d=>{const iraAnn=(+(($('ira')?.value)||0))*12;const maxIRA=(L.ira||7500)*2;const gap=maxIRA-iraAnn;return gap>0?`${fmtK(gap)}/yr additional IRA savings. Over 15 years at 7% = ${fmtK(Math.round(gap*((Math.pow(1.07,15)-1)/0.07)))} in additional retirement wealth.`:'Already near max.';},
+   advisorDownside:d=>'Traditional IRA deductibility phases out if covered by employer plan. Roth has income phase-outs. Backdoor Roth requires no existing traditional IRA balances (pro-rata rule).',
+   impact:d=>{const iraAnn=(+(($('ira')?.value)||0))*12;const gap=Math.max(0,(L.ira||7500)*2-iraAnn);return gap>500?`${fmtK(gap)}/yr additional savings`:null;},
+   trigger:d=>{const iraAnn=(+(($('ira')?.value)||0))*12;const maxIRA=(L.ira||7500)*(d.hasSpouse?2:1);return d.hasSpouse&&iraAnn<maxIRA-500&&(d.w2||0)>0;}},
 
   // â”€â”€ IRMAA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   {id:'irmaa_warning2',cat:'Tax',priority:'High',complexity:'Moderate',icon:'ti-stethoscope',
