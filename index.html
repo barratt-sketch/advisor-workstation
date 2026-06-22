@@ -3533,7 +3533,8 @@ function recalc(){
   const _chTithe=+(($('ch-tithe-override')?.value)||0)||Math.round(_chTitheBase*_chTithePct/100);
   const _chOther=(+(($('ch-cash')?.value)||0))+(+(($('ch-stock')?.value)||0))+(+(($('ch-daf')?.value)||0));
   const _totalChar=_chTithe+_chOther;
-  const _preItem=Math.min(_chSalt,_saltCap)+_chMortInt+Math.max(0,_chMedical-grossInc*0.075)+_totalChar;
+  const _saltDed=Math.min(_chSalt,_saltCap);
+  const _preItem=_saltDed+_chMortInt+Math.max(0,_chMedical-grossInc*0.075)+_totalChar;
   if($('t-item'))$('t-item').value=Math.round(_preItem);
 
   // Tax
@@ -3597,7 +3598,8 @@ function recalc(){
   const rentalLossCarryforward=rentalNet<0?Math.max(0,-rentalNet-passiveLossAllowed):0;
   // Ordinary income = W2 + STCG + ordinary dividends + retirement distributions + other
   const ordinaryIncome=+w2+cgST+divOrd+retDist+otherInc+rentalNetIncome;
-  const agi=Math.max(0,ordinaryIncome-k401t-hsaC-adj-seDeductible-seHealthIns);
+  // AGI includes ALL income: ordinary + LTCG + qualified dividends (taxed at CG rates but still part of AGI)
+  const agi=Math.max(0,ordinaryIncome+cg+divQual-k401t-hsaC-adj-seDeductible-seHealthIns);
   // QBI deduction (Section 199A) — applied after standard/itemized deduction
   const netQBI=isSelfEmployed?Math.max(0,netSEIncome-seDeductible-seHealthIns):0;
   const taxableOrdBeforeQBI=Math.max(0,agi-deduction);
@@ -3627,7 +3629,7 @@ function recalc(){
   const irmaaCost=irmaResult.annual_household||0;
   // AMT calculation
   const isoIncome=+(($('t-iso')?.value)||0);
-  const amtResult=calcAMT(agi,isoIncome,fl,deduction,item);
+  const amtResult=calcAMT(agi,isoIncome,fl,stdDed,item,_saltDed);
   const amtLiability=getAMTLiability(amtResult.tentativeMinTax,fedTax);
   const totalTax=fedTax+amtLiability+cgTax+niitTax+ficaTax+stateTax-cred;
   const totalTaxWithMedicare=totalTax+irmaaCost;
@@ -6567,15 +6569,16 @@ function renderACACliffBanner() {
 // AMT ENGINE (Alternative Minimum Tax — §55-59)
 // Simplified model: no detailed preference items. Uses ISO income + add-backs.
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-function calcAMT(agi, isoIncome, filingStatus, standardDeduction, itemizedDeductions) {
+function calcAMT(agi, isoIncome, filingStatus, standardDeduction, itemizedDeductions, saltDeduction) {
   const f = pdc.fed;
   const isMFJ = filingStatus === 'mfj';
 
-  // AMT income (AMTI) = AGI + preference items - AMT deductions
-  // Key add-backs: standard deduction (not allowed for AMT), state/local taxes (if itemized)
-  // ISO spread is a preference item (but we accept it as a separate input)
-  const stdDedAddback = Math.max(0, standardDeduction);  // Standard ded not allowed for AMT
-  const amti = agi + stdDedAddback + (isoIncome || 0);
+  // AMT income: start with AGI, subtract AMT-allowed deductions, add preferences
+  // If itemizing: keep mortgage int + charity + medical, but add back SALT
+  // If standard deduction: no deduction allowed for AMT
+  const isItemizing = itemizedDeductions > standardDeduction;
+  const amtAllowedDed = isItemizing ? Math.max(0, itemizedDeductions - (saltDeduction || 0)) : 0;
+  const amti = agi - amtAllowedDed + (isoIncome || 0);
 
   // AMT exemption (phases out above threshold)
   const exemptionBase = isMFJ ? (f.amt_exemption_mfj||140200) : (f.amt_exemption_single||90100);
