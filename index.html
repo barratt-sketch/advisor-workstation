@@ -3684,7 +3684,7 @@ function recalc(){
       return [['âš  Underpayment risk','',`<strong>Underpayment penalty risk</strong>Total prepaid ($${fmtN(totalPrepaid)}) is less than 90% of current-year federal tax ($${fmtN(required)}). The IRS may charge an underpayment penalty. Consider increasing withholding (W-4) or quarterly estimated payments.`]];
     }
     if(totalPrepaid>fedTax*1.20&&totalPrepaid>2000){
-      return [['â„¹ Over-withholding','',`<strong>Over-withholding notice</strong>Prepaid ($${fmtN(totalPrepaid)}) significantly exceeds estimated tax ($${fmtN(fedTax)}). Consider adjusting W-4 to increase take-home pay.`]];
+      return [['Over-withholding','',`<strong>Over-withholding notice</strong>Prepaid ($${fmtN(totalPrepaid)}) significantly exceeds estimated tax ($${fmtN(fedTax)}). Consider adjusting W-4 to increase take-home pay.`]];
     }
     return [];
   })())].map(([l,v,t])=>`<div class="result-row"><span class="rl">${l}${t?` ${tip(t)}`:''}</span><span class="rv">${v}</span></div>`).join('');
