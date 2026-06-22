@@ -3456,7 +3456,7 @@ function recalc(){
   const _chTitheBasis=$('ch-tithe-basis')?.value||'gross';
   const _chTitheBase=_chTitheBasis==='gross'?grossInc:Math.max(0,grossInc*0.75);
   const _chTithe=+(($('ch-tithe-override')?.value)||0)||Math.round(_chTitheBase*_chTithePct/100);
-  const _chOther=+(($('ch-cash')?.value)||0)++(($('ch-stock')?.value)||0)++(($('ch-daf')?.value)||0);
+  const _chOther=(+(($('ch-cash')?.value)||0))+(+(($('ch-stock')?.value)||0))+(+(($('ch-daf')?.value)||0));
   const _totalChar=_chTithe+_chOther;
   const _preItem=Math.min(_chSalt,_saltCap)+_chMortInt+Math.max(0,_chMedical-grossInc*0.075)+_totalChar;
   if($('t-item'))$('t-item').value=Math.round(_preItem);
