@@ -1175,7 +1175,13 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
       <span><span id="plan-count" style="color:var(--green);font-weight:600">0</span> in plan</span>
       <span><span id="rec-count" style="color:var(--amber);font-weight:600">0</span> triggered</span>
     </div>
-    <button class="topbar-btn" onclick="addClient()"><i class="ti ti-user-plus"></i> New client</button>
+    <div style="position:relative;display:inline-block" id="new-client-wrap">
+      <button class="topbar-btn" onclick="toggleNewClientMenu(event)"><i class="ti ti-user-plus"></i> New client <i class="ti ti-chevron-down" style="font-size:12px;margin-left:2px"></i></button>
+      <div id="new-client-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--sidebar2);border:1px solid rgba(255,255,255,.1);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:200px;z-index:300;padding:6px">
+        <button onclick="addClient();closeNewClientMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border:none;border-radius:6px;cursor:pointer;background:transparent;color:var(--tx-inv2);font-size:13px;text-align:left;transition:background .12s" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='transparent'"><i class="ti ti-user-plus" style="font-size:16px"></i> Blank client</button>
+        <button onclick="addSampleClient();closeNewClientMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 12px;border:none;border-radius:6px;cursor:pointer;background:transparent;color:var(--tx-inv2);font-size:13px;text-align:left;transition:background .12s" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='transparent'"><i class="ti ti-test-pipe" style="font-size:16px"></i> Sample client (Peterson family)</button>
+      </div>
+    </div>
     <button class="topbar-btn primary" onclick="saveAll()"><i class="ti ti-device-floppy"></i> Save</button>
   </div>
 </div>
@@ -3050,6 +3056,75 @@ function addClient(){
   renderAllDynLists();
   renderClientSwitcher();
   liveProfile();recalc();
+  showSection('client',document.querySelector('.nav-btn'));
+  showCI('ci-basics',document.querySelector('.ci-tab'));
+  saveAll();
+}
+
+function toggleNewClientMenu(e){
+  e.stopPropagation();
+  const m=$('new-client-menu');if(!m)return;
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+function closeNewClientMenu(){const m=$('new-client-menu');if(m)m.style.display='none';}
+document.addEventListener('click',function(e){if(!e.target.closest('#new-client-wrap'))closeNewClientMenu();});
+
+function addSampleClient(){
+  captureScalars();captureActiveGoals();
+  const c=blankClient();
+  c.c1name='Michael Peterson';c.c1dob='1976-03-15';c.c1phone='801-555-0142';c.c1email='michael.peterson@email.com';
+  c.c1health='Good';c.le1='85';
+  c.c1occ='Software Engineer';c.c1emp='Wasatch Technologies';c.c1etype='W-2 employee';c.c1years='12';
+  c.c1inc='185000';c.c1bonus='15000';c.c1has401k='yes';c.c1match='5';c.c1pension='no';
+  c.hasSpouse=true;
+  c.c2name='Sarah Peterson';c.c2dob='1978-07-22';c.c2phone='801-555-0143';c.c2email='sarah.peterson@email.com';
+  c.c2health='Excellent';c.le2='88';
+  c.c2occ='Accountant (Part-time)';c.c2emp='Jensen & Associates CPA';c.c2etype='W-2 employee';c.c2years='8';
+  c.c2inc='45000';c.c2bonus='0';c.c2has401k='yes';c.c2match='3';c.c2pension='no';
+  c.dependents=[
+    {name:'Emma Peterson',dob:'2010-06-12',relation:'Child'},
+    {name:'Jack Peterson',dob:'2013-11-04',relation:'Child'}
+  ];
+  c.filing='mfj';c.state='UT';c.city='Draper';c.zip='84020';c.risk='Moderate';c.horizon='Long (7+ yrs)';
+  c['sn-home']='650000';c['sn-mort']='380000';c['mort-rate']='3.5';c['mort-payment']='1800';
+  c['sn-hsa']='12000';c['sn-529']='35000';c['sn-oth']='8000';c['sn-liab']='24000';
+  c.activeGoals=['retire','college','mortgage','tax'];
+  c['ret-target1']='62';c['ret-target2']='62';c['ret-income']='120000';
+  c.otherinc='';c.rental='';
+  c.mortgage='1800';c.loans='400';c.insprem='350';c.utils='300';
+  c.food='1200';c.trans='500';c.health='200';c.entertain='400';c.kids='600';c.othexp='300';
+  c.k401c1='1708';c.k401c2='500';c.ira='541';c.hsa='729';c.brok='500';c.sav529='300';
+  c['r-brok-joint']='85000';c['r-brok-c1']='25000';c['r-brok-c2']='15000';
+  c['r-age']='62';c['r-ret']='6.5';c['r-inf']='3.0';c['r-need']='120000';c['r-ss']='4200';c['wr-slider']='4';
+  c['li-yrs']='20';c['li-sp']='250000';c['di-exist']='0';
+  c['ltc-daily']='300';c['ltc-period']='3';c['pc-umb']='1000000';
+  c['ss-pia1']='2800';c['ss-pia2']='1400';c['ss-ca1']='67';c['ss-ca2']='65';
+  c['t-cg']='8000';c['t-cg-st']='2000';c['t-div-qual']='3500';c['t-div-ord']='1200';
+  c['t-adj']='0';c['t-cred']='4000';c['t-with']='42000';c['t-est-tax']='0';
+  c['ch-tithe-pct']='10';c['ch-tithe-basis']='gross';c['ch-tithe-override']='';
+  c['ch-cash']='2000';c['ch-stock']='';c['ch-stock-basis']='';c['ch-daf']='';
+  c['ch-salt']='14000';c['ch-mort-int']='13300';c['ch-medical']='3500';
+  c['e-home']='650000';c['e-inv']='125000';c['e-ret']='548000';c['e-roth']='177000';
+  c['e-li']='500000';c['e-oth']='45000';c['e-liab']='420000';
+  c.retirementAccts=[
+    {name:'Michael 401(k)',type:'Traditional 401(k)',balance:'385000',owner:'Primary'},
+    {name:'Sarah 401(k)',type:'Traditional 401(k)',balance:'163000',owner:'Spouse'},
+    {name:'Michael Roth IRA',type:'Roth IRA',balance:'112000',owner:'Primary'},
+    {name:'Sarah Roth IRA',type:'Roth IRA',balance:'65000',owner:'Spouse'}
+  ];
+  c.brokerageAccts=[
+    {name:'Joint Taxable',balance:'85000',owner:'Joint'},
+    {name:'Michael Individual',balance:'25000',owner:'Primary'},
+    {name:'Sarah Individual',balance:'15000',owner:'Spouse'}
+  ];
+  c.notes='LDS family, active tithers. Michael considering early retirement at 62. Two kids headed to BYU in 2028 and 2031. Focus: tax-efficient giving, Roth conversions before RMDs, 529 funding.';
+  clients.push(c);activeId=c.id;
+  restoreScalars(c);
+  buildGoalChips(c.activeGoals);
+  applySpouseVisibility();
+  renderAllDynLists();
+  renderClientSwitcher();
+  liveProfile();propagateCoreFields();recalc();
   showSection('client',document.querySelector('.nav-btn'));
   showCI('ci-basics',document.querySelector('.ci-tab'));
   saveAll();
