@@ -1812,7 +1812,10 @@ nav .nav-section,nav .nav-btn,nav .nav-divider,nav .sidebar-brand{position:relat
       <button class="rc-mode-btn" id="mode-advisor-btn" onclick="setRecMode('advisor')"><i class="ti ti-stethoscope" style="font-size:12px"></i> Advisor</button>
     </div>
   </div>
-  <div class="fhs-wrap" id="fhs-wrap"></div>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+    <div class="fhs-wrap" id="fhs-wrap" style="flex:1;min-width:280px;margin-bottom:0"></div>
+    <div class="fhs-wrap" id="fhs-projected" style="flex:1;min-width:280px;margin-bottom:0"></div>
+  </div>
   <div class="rc-toolbar">
     <input class="rc-search" id="rc-search" placeholder="Search recommendations..." oninput="renderRC()">
     <div class="rc-filter-wrap" id="rc-cat-filters"></div>
@@ -3931,6 +3934,7 @@ function setRecStatus(id,status){
   if(c.recStatus[id]===status)c.recStatus[id]=null; // toggle off
   else c.recStatus[id]=status;
   renderRC();renderPlanV2();updateCounts();autoSave();
+  if(window._recData){const bs=computeHealthScore(window._recData);renderProjectedHealthScore(window._recData,bs.scores);}
 }
 
 // â”€â”€ Mode: 'client' | 'advisor' â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -4834,6 +4838,59 @@ function computeHealthScore(d){
   return {overall,scores};
 }
 
+function computeProjectedHealthScore(d,baseScores){
+  const projected=Object.assign({},baseScores);
+  const catMap={Tax:'Tax Efficiency',Retirement:'Retirement Readiness','Social Security':'Retirement Readiness',Insurance:'Insurance Coverage',Estate:'Estate Readiness','Cash Flow':'Cash Flow',Debt:'Debt Management',Investment:'Investment Efficiency',Education:'Cash Flow','Business Owner':'Tax Efficiency','Elder Planning':'Estate Readiness','Real Estate':'Investment Efficiency','Alternative Assets':'Investment Efficiency',Behavioral:'Investment Efficiency','Life Events':'Estate Readiness','Self-Employment':'Tax Efficiency',Charity:'Tax Efficiency'};
+  const boosts={Critical:15,High:10,Medium:6,Low:3};
+  const approvedRecs=triggeredRecs.filter(r=>{const st=getRecStatus(r.id);return st==='inplan'||st==='inprogress';});
+  approvedRecs.forEach(r=>{
+    const cat=catMap[r.cat];if(!cat)return;
+    projected[cat]=Math.min(100,(projected[cat]||0)+(boosts[r.priority]||5));
+  });
+  const implementedRecs=triggeredRecs.filter(r=>getRecStatus(r.id)==='implemented');
+  implementedRecs.forEach(r=>{
+    const cat=catMap[r.cat];if(!cat)return;
+    projected[cat]=Math.min(100,(projected[cat]||0)+(boosts[r.priority]||5));
+  });
+  const overall=Math.round(Object.values(projected).reduce((a,b)=>a+b,0)/Object.keys(projected).length);
+  return {overall,scores:projected};
+}
+
+function renderProjectedHealthScore(d,baseScores){
+  const el=$('fhs-projected');if(!el)return;
+  const approvedCount=triggeredRecs.filter(r=>{const st=getRecStatus(r.id);return st==='inplan'||st==='inprogress'||st==='implemented';}).length;
+  if(approvedCount===0){
+    el.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:120px;color:var(--tx3);font-size:13px;text-align:center;gap:8px"><i class="ti ti-arrow-big-up-lines" style="font-size:28px"></i>Add recommendations to plan to see projected improvement</div>';
+    return;
+  }
+  const {overall,scores}=computeProjectedHealthScore(d,baseScores);
+  const baseOverall=Math.round(Object.values(baseScores).reduce((a,b)=>a+b,0)/Object.keys(baseScores).length);
+  const delta=overall-baseOverall;
+  const grade=overall>=90?'Excellent':overall>=75?'Good':overall>=60?'Fair':overall>=45?'Needs Attention':'At Risk';
+  const gradeColor=overall>=75?'var(--green)':overall>=55?'var(--amber)':'var(--red)';
+  const r2=38;const circ=2*Math.PI*r2;const dash=circ*(overall/100);
+  const cats=Object.entries(scores);
+  el.innerHTML=`
+    <div class="fhs-top">
+      <div class="fhs-score-ring">
+        <svg viewBox="0 0 90 90"><circle cx="45" cy="45" r="${r2}" fill="none" stroke="var(--bg2)" stroke-width="8"/><circle cx="45" cy="45" r="${r2}" fill="none" stroke="${gradeColor}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${dash.toFixed(1)} ${(circ-dash).toFixed(1)}" transform="rotate(-90 45 45)"/></svg>
+        <div class="fhs-score-num"><div class="fhs-num" style="color:${gradeColor}">${overall}</div><div class="fhs-label">/ 100</div><div class="fhs-grade" style="color:${gradeColor}">${grade}</div></div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;margin-bottom:3px">Projected Health Score <span style="font-size:11px;color:var(--green);font-weight:600">${delta>0?'+'+delta:delta} pts</span></div>
+        <div style="font-size:12px;color:var(--tx2);margin-bottom:.75rem">After ${approvedCount} approved recommendation${approvedCount!==1?'s':''}</div>
+        <div class="fhs-cats">
+          ${cats.map(([name,score])=>{
+            const baseCat=baseScores[name]||0;
+            const catDelta=score-baseCat;
+            const col=score>=75?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+            return `<div class="fhs-cat"><div class="fhs-cat-top"><span class="fhs-cat-name">${name}</span><span class="fhs-cat-score" style="color:${col}">${Math.round(score)}${catDelta>0?' <span style="font-size:9px;color:var(--green)">+'+catDelta+'</span>':''}</span></div><div class="fhs-cat-bar"><div class="fhs-cat-fill" style="width:${score}%;background:${col}"></div></div></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderHealthScore(d){
   const el=$('fhs-wrap');if(!el)return;
   const {overall,scores}=computeHealthScore(d);
@@ -4858,6 +4915,7 @@ function renderHealthScore(d){
         </div>
       </div>
     </div>`;
+  renderProjectedHealthScore(d,scores);
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
