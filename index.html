@@ -3835,7 +3835,11 @@ function recalc(){
     hasFamilyGoal,hasCharityGoal:activeGoalSet().has('charity'),
     hasPension,hasSpouse:sp,t_state:$('t-state')?.value||'UT',
     withheld:+(($('t-with')?.value)||0),fedTax,cred:+(($('t-cred')?.value)||0),
-    totalCharitable,c1etype:c?.c1etype||'W-2 employee'
+    totalCharitable,c1etype:c?.c1etype||'W-2 employee',
+    divQual:+(($('t-div-qual')?.value)||0),divOrd:+(($('t-div-ord')?.value)||0),
+    estTaxPaid:+(($('t-est-tax')?.value)||0),
+    retAge:+(($('r-age')?.value)||65),
+    numDeps:(c?.dependents||[]).length
   };
   // Expose bracket room for rec engine
   d.bracketRoom=getBracketRoom(taxableOrd,brackets);
